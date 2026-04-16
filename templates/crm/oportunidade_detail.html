@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Oportunidade {{ oportunidade.numero|default:oportunidade.id }}{% endblock %}
+{% block page_title %}Oportunidade #{{ oportunidade.numero|default:oportunidade.id }}{% endblock %}
+
+{% block breadcrumb %}
+<div>
+  <p class="text-xs text-gray-400 uppercase tracking-wide font-medium">
+    CRM / <a href="{% url 'crm:oportunidade_list' %}" class="hover:text-gray-600">Oportunidades</a>
+  </p>
+  <h1 class="text-lg font-semibold text-gray-800">{{ oportunidade.nome_cliente }}</h1>
+</div>
+{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'crm:oportunidade_edit' oportunidade.id %}"
+   class="inline-flex items-center gap-2 bg-brand-accent hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+  </svg>
+  Editar
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  <!-- Left column: main info -->
+  <div class="lg:col-span-2 space-y-5">
+
+    <!-- Header card -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <div class="flex items-start justify-between flex-wrap gap-4">
+        <div>
+          <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Cliente</p>
+          <h2 class="text-2xl font-bold text-gray-900">{{ oportunidade.nome_cliente }}</h2>
+          <p class="text-gray-500 text-sm mt-1">Oportunidade #{{ oportunidade.numero|default:oportunidade.id }}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Valor Estimado</p>
+          <p class="text-3xl font-bold text-brand-accent">R$ {{ oportunidade.valor_estimado|floatformat:2 }}</p>
+        </div>
+      </div>
+
+      <!-- Badges row -->
+      <div class="flex flex-wrap gap-2 mt-5 pt-5 border-t border-gray-100">
+        <span class="inline-flex items-center gap-1.5 text-sm font-medium bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
+          <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+          {{ oportunidade.etapa }}
+        </span>
+
+        <span class="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1 rounded-full
+          {% if oportunidade.risco == 'B' or oportunidade.risco == 'Baixo' %}bg-green-50 text-green-700
+          {% elif oportunidade.risco == 'M' or oportunidade.risco == 'Médio' %}bg-yellow-50 text-yellow-700
+          {% elif oportunidade.risco == 'A' or oportunidade.risco == 'Alto' %}bg-red-50 text-red-700
+          {% else %}bg-gray-50 text-gray-600{% endif %}">
+          Risco: {{ oportunidade.get_risco_display|default:oportunidade.risco }}
+        </span>
+
+        <span class="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1 rounded-full
+          {% if oportunidade.probabilidade >= 70 %}bg-green-50 text-green-700
+          {% elif oportunidade.probabilidade >= 40 %}bg-yellow-50 text-yellow-700
+          {% else %}bg-red-50 text-red-700{% endif %}">
+          Probabilidade: {{ oportunidade.probabilidade }}%
+        </span>
+      </div>
+    </div>
+
+    <!-- Details grid -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Detalhes</h3>
+      </div>
+      <dl class="divide-y divide-gray-100">
+        <div class="px-6 py-4 grid grid-cols-3 gap-4">
+          <dt class="text-sm font-medium text-gray-500">Responsável</dt>
+          <dd class="text-sm text-gray-800 col-span-2">{{ oportunidade.responsavel }}</dd>
+        </div>
+        <div class="px-6 py-4 grid grid-cols-3 gap-4">
+          <dt class="text-sm font-medium text-gray-500">Data Prevista</dt>
+          <dd class="text-sm text-gray-800 col-span-2">
+            {{ oportunidade.data_prevista_fechamento|date:"d/m/Y"|default:"Não definida" }}
+          </dd>
+        </div>
+        <div class="px-6 py-4 grid grid-cols-3 gap-4">
+          <dt class="text-sm font-medium text-gray-500">Criado em</dt>
+          <dd class="text-sm text-gray-800 col-span-2">
+            {{ oportunidade.criado_em|date:"d/m/Y H:i"|default:"—" }}
+          </dd>
+        </div>
+        <div class="px-6 py-4 grid grid-cols-3 gap-4">
+          <dt class="text-sm font-medium text-gray-500">Atualizado em</dt>
+          <dd class="text-sm text-gray-800 col-span-2">
+            {{ oportunidade.atualizado_em|date:"d/m/Y H:i"|default:"—" }}
+          </dd>
+        </div>
+        {% if oportunidade.observacoes %}
+        <div class="px-6 py-4 grid grid-cols-3 gap-4">
+          <dt class="text-sm font-medium text-gray-500">Observações</dt>
+          <dd class="text-sm text-gray-800 col-span-2 whitespace-pre-wrap">{{ oportunidade.observacoes }}</dd>
+        </div>
+        {% endif %}
+      </dl>
+    </div>
+
+    <!-- Tasks related -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Tarefas</h3>
+        <button
+          hx-get="{% url 'crm:tarefa_create' %}?oportunidade={{ oportunidade.id }}"
+          hx-target="#tarefas-list"
+          hx-swap="afterbegin"
+          class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+          + Nova tarefa
+        </button>
+      </div>
+      <div id="tarefas-list" class="divide-y divide-gray-100">
+        {% for tarefa in tarefas %}
+        <div class="px-6 py-3 flex items-center gap-3">
+          <input type="checkbox"
+                 {% if tarefa.concluida %}checked{% endif %}
+                 hx-post="{% url 'crm:tarefa_toggle' tarefa.id %}"
+                 hx-target="closest div"
+                 hx-swap="outerHTML"
+                 class="w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer">
+          <span class="text-sm text-gray-700 {% if tarefa.concluida %}line-through text-gray-400{% endif %}">
+            {{ tarefa.descricao }}
+          </span>
+          <span class="ml-auto text-xs text-gray-400">{{ tarefa.data_limite|date:"d/m/Y"|default:"—" }}</span>
+        </div>
+        {% empty %}
+        <div class="px-6 py-8 text-center text-gray-400 text-sm">
+          Nenhuma tarefa registrada.
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right column: timeline & sidebar info -->
+  <div class="space-y-5">
+
+    <!-- Move stage -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Mover Etapa</h3>
+      <form hx-post="{% url 'crm:mover_oportunidade' oportunidade.id %}"
+            hx-target="body"
+            hx-swap="none"
+            class="space-y-3">
+        {% csrf_token %}
+        <select name="etapa_id"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+          {% for etapa in etapas %}
+          <option value="{{ etapa.id }}" {% if oportunidade.etapa_id == etapa.id %}selected{% endif %}>
+            {{ etapa.nome }}
+          </option>
+          {% endfor %}
+        </select>
+        <button type="submit"
+                class="w-full bg-brand hover:bg-brand-light text-white text-sm font-medium py-2 rounded-lg transition-colors">
+          Mover
+        </button>
+      </form>
+    </div>
+
+    <!-- History timeline -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="px-5 py-4 border-b border-gray-100 bg-gray-50">
+        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Histórico</h3>
+      </div>
+      <div class="p-5">
+        <ol class="relative border-l border-gray-200 space-y-5 ml-2">
+          {% for evento in historico %}
+          <li class="ml-4">
+            <div class="absolute -left-1.5 w-3 h-3 rounded-full bg-blue-400 border-2 border-white"></div>
+            <p class="text-xs font-semibold text-gray-800">{{ evento.descricao }}</p>
+            <p class="text-xs text-gray-400 mt-0.5">
+              {{ evento.usuario }} · {{ evento.criado_em|date:"d/m/Y H:i" }}
+            </p>
+          </li>
+          {% empty %}
+          <li class="ml-4 text-sm text-gray-400">Sem eventos registrados.</li>
+          {% endfor %}
+        </ol>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-2">
+      <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Ações</h3>
+      <a href="{% url 'crm:oportunidade_edit' oportunidade.id %}"
+         class="block w-full text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg py-2 hover:bg-gray-50 transition-colors">
+        Editar Oportunidade
+      </a>
+      <a href="{% url 'crm:oportunidade_list' %}"
+         class="block w-full text-center text-sm font-medium text-gray-500 rounded-lg py-2 hover:text-gray-800 transition-colors">
+        ← Voltar à Lista
+      </a>
+      <button
+        hx-post="{% url 'crm:oportunidade_delete' oportunidade.id %}"
+        hx-confirm="Tem certeza que deseja remover esta oportunidade? Esta ação não pode ser desfeita."
+        hx-target="body"
+        class="block w-full text-center text-sm font-medium text-red-500 hover:text-red-700 py-2 transition-colors">
+        Remover Oportunidade
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}

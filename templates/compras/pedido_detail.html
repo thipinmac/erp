@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}PC {{ object.numero }}{% endblock %}
+{% block page_title %}PC {{ object.numero }}{% endblock %}
+{% block breadcrumb %}
+<p class="text-xs text-gray-400 uppercase font-medium">Compras</p>
+<h1 class="text-lg font-semibold text-gray-800">Pedido de Compra {{ object.numero }}</h1>
+{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'compras:pedido_list' %}" class="text-sm text-gray-500 hover:text-gray-800 px-3 py-2">← Voltar</a>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 space-y-6">
+    <!-- Cabeçalho -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-900">{{ object.numero }}</h2>
+          <p class="text-gray-500 text-sm mt-0.5">{{ object.fornecedor.nome|default:"—" }}</p>
+        </div>
+        <span class="px-3 py-1 rounded-full text-sm font-medium
+          {% if object.status == 'recebido' %}bg-green-100 text-green-800
+          {% elif object.status == 'cancelado' %}bg-red-100 text-red-800
+          {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+          {{ object.get_status_display }}
+        </span>
+      </div>
+      <dl class="grid grid-cols-2 gap-4 text-sm">
+        <div><dt class="text-gray-400 uppercase text-xs font-medium">Emissão</dt><dd class="text-gray-700 mt-0.5">{{ object.data_emissao|date:"d/m/Y"|default:"—" }}</dd></div>
+        <div><dt class="text-gray-400 uppercase text-xs font-medium">Prev. Entrega</dt><dd class="text-gray-700 mt-0.5">{{ object.data_prevista_entrega|date:"d/m/Y"|default:"—" }}</dd></div>
+        <div><dt class="text-gray-400 uppercase text-xs font-medium">Cond. Pagamento</dt><dd class="text-gray-700 mt-0.5">{{ object.condicao_pagamento|default:"—" }}</dd></div>
+        <div><dt class="text-gray-400 uppercase text-xs font-medium">Frete</dt><dd class="text-gray-700 mt-0.5">R$ {{ object.frete_valor|floatformat:2 }}</dd></div>
+        <div><dt class="text-gray-400 uppercase text-xs font-medium">Responsável</dt><dd class="text-gray-700 mt-0.5">{{ object.responsavel.get_full_name|default:"—" }}</dd></div>
+      </dl>
+    </div>
+
+    <!-- Itens -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-800">Itens do Pedido</h3></div>
+      <table class="min-w-full divide-y divide-gray-100 text-sm">
+        <thead class="bg-gray-50"><tr>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Qtd. Pedida</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Qtd. Recebida</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Preço Unit.</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+        </tr></thead>
+        <tbody class="divide-y divide-gray-50">
+        {% for item in itens %}
+        <tr>
+          <td class="px-4 py-3 text-gray-800">{{ item.item.descricao|default:"—" }}</td>
+          <td class="px-4 py-3 text-gray-700">{{ item.quantidade }}</td>
+          <td class="px-4 py-3 text-gray-700">{{ item.quantidade_recebida }}</td>
+          <td class="px-4 py-3 text-gray-700">R$ {{ item.preco_unitario|floatformat:4 }}</td>
+          <td class="px-4 py-3 text-gray-800 font-medium">R$ {{ item.valor_total|floatformat:2 }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="px-4 py-6 text-center text-gray-400 text-sm">Sem itens.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Recebimentos -->
+    {% if recebimentos %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-800">Recebimentos</h3></div>
+      <ul class="divide-y divide-gray-100">
+      {% for rec in recebimentos %}
+      <li class="px-6 py-3 flex items-center justify-between text-sm">
+        <span class="text-gray-700">{{ rec.data|date:"d/m/Y" }} — {{ rec.get_status_display }}</span>
+        <span class="text-xs text-gray-400">{{ rec.responsavel.get_full_name|default:"—" }}</span>
+      </li>
+      {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Sidebar -->
+  <div class="space-y-6">
+    {% if pode_receber %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <h3 class="font-semibold text-gray-800 mb-3">Registrar Recebimento</h3>
+      <a href="{% url 'compras:receber' object.pk %}" class="w-full inline-block text-center bg-brand text-white text-sm font-medium py-2 rounded-lg hover:bg-blue-800">Receber Pedido</a>
+    </div>
+    {% endif %}
+    <div class="bg-gray-50 rounded-xl p-4 text-xs text-gray-400 space-y-1">
+      <p>Criado em: {{ object.criado_em|date:"d/m/Y H:i" }}</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

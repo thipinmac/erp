@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Pipeline CRM{% endblock %}
+{% block page_title %}Pipeline de Oportunidades{% endblock %}
+
+{% block breadcrumb %}
+<div>
+  <p class="text-xs text-gray-400 uppercase tracking-wide font-medium">CRM</p>
+  <h1 class="text-lg font-semibold text-gray-800">Pipeline de Oportunidades</h1>
+</div>
+{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'crm:oportunidade_create' %}"
+   class="inline-flex items-center gap-2 bg-brand-accent hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+  </svg>
+  Nova Oportunidade
+</a>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .kanban-col { min-width: 272px; max-width: 272px; }
+  .kanban-card[draggable="true"] { cursor: grab; }
+  .kanban-card[draggable="true"]:active { cursor: grabbing; opacity: 0.75; }
+  .drop-zone.drag-over { background-color: rgba(59,130,246,0.07); border-radius: 0.75rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Kanban board -->
+<div class="flex gap-4 overflow-x-auto pb-4 -mx-2 px-2 h-full" id="kanban-board">
+  {% for col in board %}
+  <div class="kanban-col flex-shrink-0 flex flex-col">
+
+    <!-- Column header -->
+    <div class="rounded-t-xl px-3 py-3 mb-2"
+         style="background-color: {{ col.etapa.cor }}22; border-top: 3px solid {{ col.etapa.cor }};">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full" style="background-color: {{ col.etapa.cor }};"></span>
+          <span class="font-semibold text-gray-800 text-sm">{{ col.etapa.nome }}</span>
+        </div>
+        <span class="text-xs bg-white/60 text-gray-600 font-medium px-2 py-0.5 rounded-full">
+          {{ col.count }}
+        </span>
+      </div>
+      <p class="text-xs text-gray-500 mt-1 ml-4">
+        R$ {{ col.total_valor|floatformat:0 }}
+      </p>
+    </div>
+
+    <!-- Drop zone -->
+    <div class="drop-zone flex-1 space-y-2 p-1 min-h-[120px]"
+         ondragover="event.preventDefault(); this.classList.add('drag-over')"
+         ondragleave="this.classList.remove('drag-over')"
+         ondrop="dropCard(event, '{{ col.etapa.id }}'); this.classList.remove('drag-over')">
+
+      {% for op in col.oportunidades %}
+      <div class="kanban-card bg-white rounded-xl shadow-sm border border-gray-100 p-3 hover:shadow-md hover:border-blue-200 transition-all"
+           draggable="true"
+           ondragstart="dragStart(event, '{{ op.id }}')"
+           id="card-{{ op.id }}">
+
+        <!-- Client name -->
+        <p class="font-semibold text-gray-800 text-sm truncate mb-1">
+          {{ op.cliente.nome|default:op.nome_cliente }}
+        </p>
+
+        <!-- Value -->
+        <p class="text-xs text-gray-500 mb-2">
+          R$ {{ op.valor_estimado|floatformat:0 }}
+          {% if op.probabilidade %}
+          <span class="ml-1 text-blue-600 font-medium">· {{ op.probabilidade }}%</span>
+          {% endif %}
+        </p>
+
+        <!-- Footer: assignee + risk -->
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-gray-400 truncate max-w-[120px]">
+            {{ op.responsavel.get_full_name|default:op.responsavel.username|default:"—" }}
+          </span>
+          {% if op.risco == "alto" %}
+            <span class="px-1.5 py-0.5 bg-red-100 text-red-700 text-xs rounded-full font-medium">Alto</span>
+          {% elif op.risco == "medio" %}
+            <span class="px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded-full font-medium">Médio</span>
+          {% else %}
+            <span class="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">Baixo</span>
+          {% endif %}
+        </div>
+
+        <!-- Detail link -->
+        <a href="{% url 'crm:oportunidade_detail' op.id %}"
+           class="mt-2 block text-xs text-blue-500 hover:text-blue-700 hover:underline"
+           onclick="event.stopPropagation()">Ver detalhes →</a>
+      </div>
+      {% empty %}
+      <div class="text-center py-8 text-gray-300 text-xs">
+        Nenhuma oportunidade
+      </div>
+      {% endfor %}
+
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function dragStart(e, id) {
+  e.dataTransfer.setData('id', id);
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function dropCard(e, etapaId) {
+  e.preventDefault();
+  const id = e.dataTransfer.getData('id');
+  if (!id) return;
+
+  const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+  const body = new URLSearchParams({ etapa_id: etapaId, csrfmiddlewaretoken: csrf });
+
+  fetch(`/crm/pipeline/mover/${id}/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': csrf, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+  }).then(r => {
+    if (r.ok) window.location.reload();
+  });
+}
+</script>
+{% endblock %}

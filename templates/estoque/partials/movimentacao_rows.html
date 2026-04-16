@@ -1,0 +1,20 @@
+{% for mov in movimentacoes %}
+<tr class="hover:bg-gray-50">
+  <td class="px-4 py-3 text-sm text-gray-600">{{ mov.criado_em|date:"d/m/Y H:i" }}</td>
+  <td class="px-4 py-3">
+    <span class="px-2 py-0.5 rounded text-xs font-medium
+      {% if 'entrada' in mov.tipo %}bg-green-100 text-green-800
+      {% elif 'saida' in mov.tipo %}bg-red-100 text-red-800
+      {% else %}bg-gray-100 text-gray-700{% endif %}">
+      {{ mov.get_tipo_display }}
+    </span>
+  </td>
+  <td class="px-4 py-3 text-sm text-gray-800">{{ mov.item.descricao|default:"—"|truncatechars:40 }}</td>
+  <td class="px-4 py-3 text-sm font-medium text-gray-800">{{ mov.quantidade }}</td>
+  <td class="px-4 py-3 text-sm text-gray-500">{{ mov.localizacao_origem|default:"—" }}</td>
+  <td class="px-4 py-3 text-sm text-gray-500">{{ mov.localizacao_destino|default:"—" }}</td>
+  <td class="px-4 py-3 text-sm text-gray-500">{{ mov.usuario.get_full_name|default:"—" }}</td>
+</tr>
+{% empty %}
+<tr><td colspan="7" class="px-4 py-10 text-center text-gray-400 text-sm">Nenhuma movimentação encontrada.</td></tr>
+{% endfor %}

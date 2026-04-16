@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}OP {{ op.numero }}{% endblock %}
+{% block page_title %}OP {{ op.numero }}{% endblock %}
+{% block breadcrumb %}
+<p class="text-xs text-gray-400 uppercase font-medium">Produção</p>
+<h1 class="text-lg font-semibold text-gray-800">Ordem de Produção {{ op.numero }}</h1>
+{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'producao:op_list' %}" class="text-sm text-gray-500 hover:text-gray-800 px-3 py-2">← Voltar</a>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 space-y-6">
+    <!-- Cabeçalho OP -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-900">{{ op.numero }}</h2>
+          <p class="text-gray-500 text-sm mt-0.5">{{ op.item.descricao|default:"—" }}</p>
+        </div>
+        <span class="px-3 py-1 rounded-full text-sm font-medium
+          {% if op.status == 'concluida' %}bg-green-100 text-green-800
+          {% elif op.status == 'cancelada' %}bg-red-100 text-red-800
+          {% else %}bg-blue-100 text-blue-800{% endif %}">
+          {{ op.get_status_display }}
+        </span>
+      </div>
+      <dl class="grid grid-cols-2 gap-4 text-sm">
+        <div><dt class="text-gray-400 uppercase text-xs font-medium">Pedido</dt><dd class="text-gray-700 mt-0.5">{{ op.pedido.numero|default:"—" }}</dd></div>
+        <div><dt class="text-gray-400 uppercase text-xs font-medium">Responsável</dt><dd class="text-gray-700 mt-0.5">{{ op.responsavel.get_full_name|default:"—" }}</dd></div>
+        <div><dt class="text-gray-400 uppercase text-xs font-medium">Prev. Início</dt><dd class="text-gray-700 mt-0.5">{{ op.data_prevista_inicio|date:"d/m/Y"|default:"—" }}</dd></div>
+        <div><dt class="text-gray-400 uppercase text-xs font-medium">Prev. Fim</dt><dd class="text-gray-700 mt-0.5">{{ op.data_prevista_fim|date:"d/m/Y"|default:"—" }}</dd></div>
+        <div><dt class="text-gray-400 uppercase text-xs font-medium">Prioridade</dt><dd class="text-gray-700 mt-0.5">{{ op.prioridade }}</dd></div>
+        <div><dt class="text-gray-400 uppercase text-xs font-medium">Roteiro</dt><dd class="text-gray-700 mt-0.5">{{ op.roteiro|default:"—" }}</dd></div>
+      </dl>
+      {% if op.observacoes %}<div class="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-600">{{ op.observacoes }}</div>{% endif %}
+    </div>
+
+    <!-- Apontamentos -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <h3 class="font-semibold text-gray-800">Apontamentos</h3>
+      </div>
+      {% if op.apontamentos.all %}
+      <table class="min-w-full divide-y divide-gray-100 text-sm">
+        <thead class="bg-gray-50"><tr>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Etapa</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Operador</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Início</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fim</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Qtd. Prod.</th>
+        </tr></thead>
+        <tbody class="divide-y divide-gray-50">
+        {% for a in op.apontamentos.all %}
+        <tr>
+          <td class="px-4 py-3 text-gray-700">{{ a.etapa|default:"—" }}</td>
+          <td class="px-4 py-3 text-gray-600">{{ a.operador.get_full_name|default:"—" }}</td>
+          <td class="px-4 py-3 text-gray-600">{{ a.inicio|date:"d/m H:i"|default:"—" }}</td>
+          <td class="px-4 py-3 text-gray-600">{{ a.fim|date:"d/m H:i"|default:"—" }}</td>
+          <td class="px-4 py-3 text-gray-700 font-medium">{{ a.quantidade_produzida }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="px-6 py-8 text-center text-gray-400 text-sm">Nenhum apontamento registrado.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="space-y-6">
+    <!-- Avançar status -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <h3 class="font-semibold text-gray-800 mb-3">Avançar Status</h3>
+      <form method="post" action="{% url 'producao:avancar_status' op.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="w-full bg-brand text-white text-sm font-medium py-2 rounded-lg hover:bg-blue-800 transition-colors">Avançar →</button>
+      </form>
+    </div>
+    <!-- Novo Apontamento -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <h3 class="font-semibold text-gray-800 mb-3">Registrar Apontamento</h3>
+      <form method="post" action="{% url 'producao:apontar' op.pk %}" class="space-y-3">
+        {% csrf_token %}
+        <input type="datetime-local" name="inicio" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder="Início">
+        <input type="datetime-local" name="fim" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder="Fim">
+        <input type="number" name="quantidade_produzida" min="0" step="0.01" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder="Qtd. produzida">
+        <textarea name="observacao" rows="2" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder="Observação"></textarea>
+        <button type="submit" class="w-full bg-brand-accent text-white text-sm font-medium py-2 rounded-lg hover:bg-orange-600 transition-colors">Salvar Apontamento</button>
+      </form>
+    </div>
+    <div class="bg-gray-50 rounded-xl p-4 text-xs text-gray-400 space-y-1">
+      <p>Criado em: {{ op.criado_em|date:"d/m/Y H:i" }}</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

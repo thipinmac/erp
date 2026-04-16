@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Editar Oportunidade{% else %}Nova Oportunidade{% endif %}{% endblock %}
+{% block page_title %}{% if object %}Editar Oportunidade{% else %}Nova Oportunidade{% endif %}{% endblock %}
+
+{% block breadcrumb %}
+<div>
+  <p class="text-xs text-gray-400 uppercase tracking-wide font-medium">
+    CRM / <a href="{% url 'crm:oportunidade_list' %}" class="hover:text-gray-600">Oportunidades</a>
+  </p>
+  <h1 class="text-lg font-semibold text-gray-800">
+    {% if object %}Editar: {{ object.nome_cliente }}{% else %}Nova Oportunidade{% endif %}
+  </h1>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <form method="post"
+        hx-post="{{ request.path }}"
+        hx-target="#form-wrapper"
+        hx-swap="outerHTML"
+        id="form-wrapper">
+    {% csrf_token %}
+
+    <!-- Card -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-4">
+
+      <!-- Section: Identificação -->
+      <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+        <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Identificação</h2>
+      </div>
+      <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">
+            Cliente <span class="text-red-500">*</span>
+          </label>
+          {% if form.cliente %}
+            {{ form.cliente }}
+          {% else %}
+          <input type="text" name="nome_cliente" value="{{ object.nome_cliente|default:'' }}"
+                 required placeholder="Nome do cliente"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+          {% endif %}
+          {% if form.cliente.errors %}<p class="mt-1 text-xs text-red-600">{{ form.cliente.errors|join:", " }}</p>{% endif %}
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">
+            Etapa <span class="text-red-500">*</span>
+          </label>
+          {% if form.etapa %}
+            {{ form.etapa }}
+          {% else %}
+          <select name="etapa" required
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+            <option value="">Selecione…</option>
+            {% for etapa in etapas %}
+            <option value="{{ etapa.id }}" {% if object.etapa_id == etapa.id %}selected{% endif %}>{{ etapa.nome }}</option>
+            {% endfor %}
+          </select>
+          {% endif %}
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">
+            Responsável <span class="text-red-500">*</span>
+          </label>
+          {% if form.responsavel %}
+            {{ form.responsavel }}
+          {% else %}
+          <select name="responsavel" required
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+            <option value="">Selecione…</option>
+            {% for u in responsaveis %}
+            <option value="{{ u.id }}" {% if object.responsavel_id == u.id %}selected{% endif %}>
+              {{ u.get_full_name|default:u.username }}
+            </option>
+            {% endfor %}
+          </select>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Section: Valores -->
+      <div class="px-6 py-4 border-b border-gray-100 border-t bg-gray-50">
+        <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Valores e Probabilidade</h2>
+      </div>
+      <div class="p-6 grid grid-cols-1 sm:grid-cols-3 gap-5">
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">
+            Valor Estimado (R$) <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">R$</span>
+            <input type="number" name="valor_estimado" value="{{ object.valor_estimado|default:'' }}"
+                   required step="0.01" min="0" placeholder="0,00"
+                   class="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+          {% if form.valor_estimado.errors %}<p class="mt-1 text-xs text-red-600">{{ form.valor_estimado.errors|join:", " }}</p>{% endif %}
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Probabilidade (%)</label>
+          <input type="number" name="probabilidade" value="{{ object.probabilidade|default:50 }}"
+                 min="0" max="100" step="5"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Risco</label>
+          <select name="risco"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+            <option value="B" {% if object.risco == 'B' %}selected{% endif %}>Baixo</option>
+            <option value="M" {% if object.risco == 'M' or not object %}selected{% endif %}>Médio</option>
+            <option value="A" {% if object.risco == 'A' %}selected{% endif %}>Alto</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Data Prev. Fechamento</label>
+          <input type="date" name="data_prevista_fechamento"
+                 value="{{ object.data_prevista_fechamento|date:'Y-m-d'|default:'' }}"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+      </div>
+
+      <!-- Section: Observações -->
+      <div class="px-6 py-4 border-b border-gray-100 border-t bg-gray-50">
+        <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Observações</h2>
+      </div>
+      <div class="p-6">
+        <textarea name="observacoes" rows="4" placeholder="Anotações sobre a oportunidade…"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none">{{ object.observacoes|default:'' }}</textarea>
+      </div>
+    </div>
+
+    <!-- Form errors -->
+    {% if form.non_field_errors %}
+    <div class="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+      {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="flex items-center justify-between">
+      <a href="{% url 'crm:oportunidade_list' %}"
+         class="text-sm text-gray-500 hover:text-gray-800 font-medium px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+        ← Cancelar
+      </a>
+      <div class="flex gap-3">
+        {% if object %}
+        <button type="submit" name="action" value="save_and_continue"
+                class="text-sm text-gray-700 font-medium px-5 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+          Salvar e continuar editando
+        </button>
+        {% endif %}
+        <button type="submit"
+                class="bg-brand-accent hover:bg-orange-600 text-white text-sm font-semibold px-6 py-2 rounded-lg transition-colors shadow-sm">
+          {% if object %}Salvar Alterações{% else %}Criar Oportunidade{% endif %}
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Style all Django form widgets
+document.querySelectorAll('select, input[type=text], input[type=number], input[type=date], textarea').forEach(el => {
+  if (!el.classList.contains('styled')) {
+    el.classList.add('w-full','border','border-gray-300','rounded-lg','px-3','py-2.5','text-sm',
+                     'focus:ring-2','focus:ring-blue-500','focus:border-blue-500','outline-none','styled');
+    if (el.tagName === 'SELECT') el.classList.add('bg-white');
+  }
+});
+</script>
+{% endblock %}

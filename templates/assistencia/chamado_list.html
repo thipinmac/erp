@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Assistência Técnica{% endblock %}
+{% block page_title %}Assistência Técnica{% endblock %}
+{% block breadcrumb %}<p class="text-xs text-gray-400 uppercase font-medium">Assistência</p><h1 class="text-lg font-semibold text-gray-800">Chamados</h1>{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'assistencia:create' %}" class="inline-flex items-center gap-2 bg-brand-accent hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg">+ Novo Chamado</a>
+{% endblock %}
+{% block content %}
+<!-- Status filters -->
+<div class="flex gap-2 mb-4">
+  <a href="?" class="px-3 py-1.5 text-xs font-medium rounded-lg {% if not request.GET.status %}bg-brand text-white{% else %}bg-white text-gray-600 border border-gray-200{% endif %}">Todos</a>
+  <a href="?status=aberto" class="px-3 py-1.5 text-xs font-medium rounded-lg {% if request.GET.status == 'aberto' %}bg-brand text-white{% else %}bg-white text-gray-600 border border-gray-200{% endif %}">Abertos</a>
+  <a href="?status=em_atendimento" class="px-3 py-1.5 text-xs font-medium rounded-lg {% if request.GET.status == 'em_atendimento' %}bg-brand text-white{% else %}bg-white text-gray-600 border border-gray-200{% endif %}">Em Atendimento</a>
+  <a href="?status=encerrado" class="px-3 py-1.5 text-xs font-medium rounded-lg {% if request.GET.status == 'encerrado' %}bg-brand text-white{% else %}bg-white text-gray-600 border border-gray-200{% endif %}">Encerrados</a>
+</div>
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <table class="min-w-full divide-y divide-gray-100">
+    <thead class="bg-gray-50"><tr>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente / Pedido</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descrição</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Responsável</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aberto em</th>
+    </tr></thead>
+    <tbody class="divide-y divide-gray-50">
+    {% for chamado in chamados %}
+    <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{% url 'assistencia:detail' chamado.pk %}'">
+      <td class="px-4 py-3 text-sm font-medium text-brand">{{ chamado.numero }}</td>
+      <td class="px-4 py-3 text-sm text-gray-800">
+        {{ chamado.pedido.cliente.nome|default:"—" }}
+        {% if chamado.pedido %}<br><span class="text-xs text-gray-400">{{ chamado.pedido.numero }}</span>{% endif %}
+      </td>
+      <td class="px-4 py-3 text-sm text-gray-700">{{ chamado.get_tipo_display }}</td>
+      <td class="px-4 py-3 text-sm text-gray-700 max-w-xs truncate">{{ chamado.descricao }}</td>
+      <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-medium {% if chamado.status == 'encerrado' %}bg-green-100 text-green-800{% elif chamado.status == 'em_atendimento' %}bg-blue-100 text-blue-800{% else %}bg-orange-100 text-orange-800{% endif %}">{{ chamado.get_status_display }}</span></td>
+      <td class="px-4 py-3 text-sm text-gray-600">{{ chamado.responsavel.get_full_name|default:"—" }}</td>
+      <td class="px-4 py-3 text-sm text-gray-400">{{ chamado.criado_em|date:"d/m/Y" }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="7" class="px-4 py-10 text-center text-gray-400 text-sm">Nenhum chamado encontrado.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

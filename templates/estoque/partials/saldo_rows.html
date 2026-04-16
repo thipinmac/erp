@@ -1,0 +1,13 @@
+{% for saldo in saldos %}
+<tr class="hover:bg-gray-50 {% if saldo.saldo_disponivel <= 0 %}bg-red-50{% endif %}">
+  <td class="px-4 py-3 text-sm font-mono text-gray-600">{{ saldo.item.codigo }}</td>
+  <td class="px-4 py-3 text-sm text-gray-800">{{ saldo.item.descricao|truncatechars:50 }}</td>
+  <td class="px-4 py-3 text-sm text-gray-600">{{ saldo.localizacao|default:"—" }}</td>
+  <td class="px-4 py-3 text-sm font-medium text-gray-800">{{ saldo.saldo_atual }}</td>
+  <td class="px-4 py-3 text-sm text-gray-600">{{ saldo.saldo_reservado }}</td>
+  <td class="px-4 py-3 text-sm {% if saldo.saldo_disponivel <= 0 %}text-red-600 font-semibold{% else %}text-gray-800{% endif %}">{{ saldo.saldo_disponivel }}</td>
+  <td class="px-4 py-3 text-sm text-gray-500">{{ saldo.item.unidade.sigla|default:"un" }}</td>
+</tr>
+{% empty %}
+<tr><td colspan="7" class="px-4 py-10 text-center text-gray-400 text-sm">Nenhum saldo encontrado.</td></tr>
+{% endfor %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Romaneios{% endblock %}
+{% block page_title %}Romaneios{% endblock %}
+{% block breadcrumb %}
+<p class="text-xs text-gray-400 uppercase font-medium">Produção</p>
+<h1 class="text-lg font-semibold text-gray-800">Romaneios</h1>
+{% endblock %}
+{% block content %}
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <table class="min-w-full divide-y divide-gray-100">
+    <thead class="bg-gray-50"><tr>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pedido</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Conferente</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Volumes</th>
+    </tr></thead>
+    <tbody class="divide-y divide-gray-50">
+    {% for romaneio in romaneios %}
+    <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{% url 'producao:romaneio_detail' romaneio.pk %}'">
+      <td class="px-4 py-3 text-sm font-medium text-brand">{{ romaneio.numero }}</td>
+      <td class="px-4 py-3 text-sm text-gray-700">{{ romaneio.pedido.numero|default:"—" }}</td>
+      <td class="px-4 py-3 text-sm text-gray-600">{{ romaneio.conferente.get_full_name|default:"—" }}</td>
+      <td class="px-4 py-3 text-sm text-gray-600">{{ romaneio.criado_em|date:"d/m/Y" }}</td>
+      <td class="px-4 py-3 text-sm text-gray-700">{{ romaneio.volumes.count }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="px-4 py-10 text-center text-gray-400 text-sm">Nenhum romaneio encontrado.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if is_paginated %}
+<div class="flex justify-center gap-2 mt-4 text-sm">
+  {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">← Anterior</a>{% endif %}
+  <span class="px-3 py-1.5 text-gray-500">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">Próxima →</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Editar Lead{% else %}Novo Lead{% endif %}{% endblock %}
+{% block page_title %}{% if object %}Editar Lead{% else %}Novo Lead{% endif %}{% endblock %}
+
+{% block breadcrumb %}
+<div>
+  <p class="text-xs text-gray-400 uppercase tracking-wide font-medium">
+    CRM / <a href="{% url 'crm:lead_list' %}" class="hover:text-gray-600">Leads</a>
+  </p>
+  <h1 class="text-lg font-semibold text-gray-800">
+    {% if object %}Editar: {{ object.nome }}{% else %}Novo Lead{% endif %}
+  </h1>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+  <form method="post" id="lead-form">
+    {% csrf_token %}
+
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-4">
+
+      <!-- Section: Dados do lead -->
+      <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+        <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Dados do Lead</h2>
+      </div>
+      <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">
+            Nome completo <span class="text-red-500">*</span>
+          </label>
+          <input type="text" name="nome" value="{{ object.nome|default:'' }}"
+                 required placeholder="Ex: João da Silva"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+          {% if form.nome.errors %}<p class="mt-1 text-xs text-red-600">{{ form.nome.errors|join:", " }}</p>{% endif %}
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Telefone</label>
+          <input type="tel" name="telefone" value="{{ object.telefone|default:'' }}"
+                 placeholder="(11) 99999-9999"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">E-mail</label>
+          <input type="email" name="email" value="{{ object.email|default:'' }}"
+                 placeholder="contato@exemplo.com"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Empresa</label>
+          <input type="text" name="empresa" value="{{ object.empresa|default:'' }}"
+                 placeholder="Nome da empresa"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Cargo</label>
+          <input type="text" name="cargo" value="{{ object.cargo|default:'' }}"
+                 placeholder="Ex: Gerente de Compras"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+        </div>
+      </div>
+
+      <!-- Section: Classificação -->
+      <div class="px-6 py-4 border-b border-gray-100 border-t bg-gray-50">
+        <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Classificação</h2>
+      </div>
+      <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Origem <span class="text-red-500">*</span></label>
+          <select name="origem" required
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+            <option value="">Selecione…</option>
+            <option value="Site" {% if object.origem == 'Site' %}selected{% endif %}>Site</option>
+            <option value="Indicação" {% if object.origem == 'Indicação' %}selected{% endif %}>Indicação</option>
+            <option value="Redes Sociais" {% if object.origem == 'Redes Sociais' %}selected{% endif %}>Redes Sociais</option>
+            <option value="WhatsApp" {% if object.origem == 'WhatsApp' %}selected{% endif %}>WhatsApp</option>
+            <option value="Feira / Evento" {% if object.origem == 'Feira / Evento' %}selected{% endif %}>Feira / Evento</option>
+            <option value="Prospecção Ativa" {% if object.origem == 'Prospecção Ativa' %}selected{% endif %}>Prospecção Ativa</option>
+            <option value="Outro" {% if object.origem == 'Outro' %}selected{% endif %}>Outro</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
+          <select name="status"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+            <option value="novo" {% if object.status == 'novo' or not object %}selected{% endif %}>Novo</option>
+            <option value="contatado" {% if object.status == 'contatado' %}selected{% endif %}>Contatado</option>
+            <option value="qualificado" {% if object.status == 'qualificado' %}selected{% endif %}>Qualificado</option>
+            <option value="convertido" {% if object.status == 'convertido' %}selected{% endif %}>Convertido</option>
+            <option value="descartado" {% if object.status == 'descartado' %}selected{% endif %}>Descartado</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Responsável</label>
+          <select name="responsavel"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+            <option value="">Não atribuído</option>
+            {% for u in responsaveis %}
+            <option value="{{ u.id }}" {% if object.responsavel_id == u.id %}selected{% endif %}>
+              {{ u.get_full_name|default:u.username }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Interesse estimado (R$)</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">R$</span>
+            <input type="number" name="valor_estimado" value="{{ object.valor_estimado|default:'' }}"
+                   step="0.01" min="0" placeholder="0,00"
+                   class="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Observações -->
+      <div class="px-6 py-4 border-b border-gray-100 border-t bg-gray-50">
+        <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Observações</h2>
+      </div>
+      <div class="p-6">
+        <textarea name="observacoes" rows="3" placeholder="Contexto, necessidades, próximos passos…"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none">{{ object.observacoes|default:'' }}</textarea>
+      </div>
+    </div>
+
+    {% if form.non_field_errors %}
+    <div class="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+      {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="flex items-center justify-between">
+      <a href="{% url 'crm:lead_list' %}"
+         class="text-sm text-gray-500 hover:text-gray-800 font-medium px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+        ← Cancelar
+      </a>
+      <button type="submit"
+              class="bg-brand-accent hover:bg-orange-600 text-white text-sm font-semibold px-6 py-2 rounded-lg transition-colors shadow-sm">
+        {% if object %}Salvar Alterações{% else %}Cadastrar Lead{% endif %}
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

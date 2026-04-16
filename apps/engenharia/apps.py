@@ -1,0 +1,8 @@
+from django.apps import AppConfig
+
+
+class EngenhariaConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.engenharia"
+    label = "engenharia"
+    verbose_name = "Engenharia e Projetos"

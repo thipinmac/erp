@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}DRE{% endblock %}
+{% block page_title %}DRE — Demonstrativo de Resultado{% endblock %}
+{% block breadcrumb %}<p class="text-xs text-gray-400 uppercase font-medium">Financeiro</p><h1 class="text-lg font-semibold text-gray-800">DRE</h1>{% endblock %}
+{% block content %}
+<div class="max-w-2xl">
+  <!-- Month filter -->
+  <form method="get" class="flex gap-3 mb-5 items-end">
+    <div>
+      <label class="block text-xs text-gray-500 mb-1">Mês</label>
+      <input type="month" name="mes" value="{{ mes_atual }}" class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-300 outline-none">
+    </div>
+    <button class="bg-brand text-white text-sm px-4 py-2 rounded-lg">Filtrar</button>
+  </form>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-gray-50 px-5 py-3 border-b border-gray-100">
+      <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Resultado do Período</h2>
+    </div>
+    <table class="min-w-full">
+      <tbody>
+        {% for linha in linhas_dre %}
+        <tr class="{% if linha.negrito %}font-semibold bg-gray-50{% endif %} border-b border-gray-50 last:border-0">
+          <td class="px-5 py-3 text-sm text-gray-800 {% if linha.nivel == 2 %}pl-8{% endif %}">{{ linha.descricao }}</td>
+          <td class="px-5 py-3 text-sm text-right {% if linha.valor < 0 %}text-red-600{% else %}text-gray-800{% endif %}">
+            R$ {{ linha.valor|floatformat:2 }}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="2" class="px-5 py-8 text-center text-gray-400 text-sm">Sem dados para o período selecionado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

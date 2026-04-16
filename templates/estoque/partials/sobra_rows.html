@@ -1,0 +1,19 @@
+{% for sobra in sobras %}
+<tr class="hover:bg-gray-50">
+  <td class="px-4 py-3 text-sm text-gray-800">{{ sobra.item.descricao|default:"—"|truncatechars:40 }}</td>
+  <td class="px-4 py-3 text-sm text-gray-700">{{ sobra.largura_mm }} × {{ sobra.comprimento_mm }}</td>
+  <td class="px-4 py-3 text-sm text-gray-700">{{ sobra.area_mm2|floatformat:0 }}</td>
+  <td class="px-4 py-3 text-sm text-gray-500">{{ sobra.localizacao|default:"—" }}</td>
+  <td class="px-4 py-3">
+    <span class="px-2 py-0.5 rounded text-xs font-medium
+      {% if sobra.estado == 'disponivel' %}bg-green-100 text-green-800
+      {% elif sobra.estado == 'descarte' %}bg-red-100 text-red-800
+      {% else %}bg-gray-100 text-gray-700{% endif %}">
+      {{ sobra.get_estado_display|default:sobra.estado }}
+    </span>
+  </td>
+  <td class="px-4 py-3 text-sm">{% if sobra.reaproveitavel %}<span class="text-green-600">✓</span>{% else %}—{% endif %}</td>
+</tr>
+{% empty %}
+<tr><td colspan="6" class="px-4 py-10 text-center text-gray-400 text-sm">Nenhuma sobra encontrada.</td></tr>
+{% endfor %}

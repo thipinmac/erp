@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-gray-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ title|default:"MóveisERP" }}{% endblock %} — MóveisERP</title>
+
+  <!-- Tailwind CSS CDN (dev) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { 50:'#eff6ff',100:'#dbeafe',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',900:'#1e3a8a' },
+            brand: { DEFAULT:'#1e3a5f', light:'#2d5a8e', accent:'#f97316' }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- HTMX -->
+  <script src="https://unpkg.com/htmx.org@2.0.3" defer></script>
+  <!-- Alpine.js for small interactions -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body class="h-full" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+
+<div class="flex h-full">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────── -->
+  <aside class="w-64 bg-brand flex flex-col flex-shrink-0 shadow-xl" id="sidebar">
+
+    <!-- Logo -->
+    <div class="flex items-center gap-3 px-6 py-5 border-b border-brand-light">
+      <div class="w-8 h-8 bg-brand-accent rounded-lg flex items-center justify-center">
+        <span class="text-white font-bold text-sm">M</span>
+      </div>
+      <div>
+        <div class="text-white font-bold text-sm leading-none">MóveisERP</div>
+        {% if empresa_ativa %}
+        <div class="text-blue-300 text-xs truncate max-w-[140px]">{{ empresa_ativa.nome_fantasia }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+      {% for item in menu_items %}
+        {% if item.filhos %}
+        <div x-data="{ open: false }">
+          <button @click="open = !open"
+                  class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-blue-200 hover:bg-brand-light hover:text-white text-sm transition-colors">
+            <span class="flex items-center gap-2">
+              <span class="w-4 h-4 opacity-70">●</span>
+              {{ item.label }}
+            </span>
+            <span x-text="open ? '▾' : '▸'" class="text-xs"></span>
+          </button>
+          <div x-show="open" x-cloak class="ml-6 mt-1 space-y-1">
+            {% for filho in item.filhos %}
+            <a href="{% url filho.url_name %}"
+               class="block px-3 py-1.5 rounded text-blue-300 hover:text-white hover:bg-brand-light text-xs transition-colors">
+              {{ filho.label }}
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+        {% else %}
+        <a href="{% url item.url_name %}"
+           class="flex items-center gap-2 px-3 py-2 rounded-lg text-blue-200 hover:bg-brand-light hover:text-white text-sm transition-colors">
+          <span class="w-4 h-4 opacity-70">●</span>
+          {{ item.label }}
+        </a>
+        {% endif %}
+      {% endfor %}
+    </nav>
+
+    <!-- User -->
+    <div class="border-t border-brand-light p-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-brand-accent flex items-center justify-center text-white text-sm font-bold">
+          {{ user.first_name.0|upper|default:user.username.0|upper }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-white text-sm font-medium truncate">{{ user.get_full_name|default:user.username }}</div>
+          <div class="text-blue-300 text-xs truncate">{{ user.cargo|default:user.email }}</div>
+        </div>
+        <a href="{% url 'administracao:logout' %}" class="text-blue-300 hover:text-white text-xs">Sair</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main ────────────────────────────────────────────────────────── -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+    <!-- Topbar -->
+    <header class="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between flex-shrink-0 shadow-sm">
+      <div>
+        {% block breadcrumb %}
+        <h1 class="text-lg font-semibold text-gray-800">{% block page_title %}{{ title|default:"Dashboard" }}{% endblock %}</h1>
+        {% endblock %}
+      </div>
+      <div class="flex items-center gap-3">
+        {% block topbar_actions %}{% endblock %}
+      </div>
+    </header>
+
+    <!-- Alerts / Messages -->
+    {% if messages %}
+    <div class="px-6 pt-4" id="messages-container">
+      {% for message in messages %}
+      <div class="mb-2 px-4 py-3 rounded-lg text-sm flex items-center justify-between
+        {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200
+        {% elif message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200
+        {% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-700 border border-yellow-200
+        {% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}">
+        {{ message }}
+        <button onclick="this.parentElement.remove()" class="ml-4 opacity-60 hover:opacity-100">✕</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- HTMX toast target -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- Content -->
+    <main class="flex-1 overflow-auto p-6" id="main-content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+</div>
+
+<script>
+// HTMX global: mostra toast via HX-Trigger header
+document.body.addEventListener('showToast', function(evt) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg text-sm max-w-xs';
+  toast.textContent = evt.detail.message || 'Operação realizada.';
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
+});
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

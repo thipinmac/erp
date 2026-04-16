@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ object.nome }}{% endblock %}
+{% block page_title %}Fornecedor{% endblock %}
+{% block breadcrumb %}
+<p class="text-xs text-gray-400 uppercase font-medium">Cadastros</p>
+<h1 class="text-lg font-semibold text-gray-800">{{ object.nome }}</h1>
+{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'cadastros:fornecedor_list' %}" class="text-sm text-gray-500 hover:text-gray-800 px-3 py-2">← Voltar</a>
+<a href="{% url 'cadastros:fornecedor_update' object.pk %}" class="inline-flex items-center gap-2 bg-brand text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-800">Editar</a>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-900">{{ object.nome }}</h2>
+          <p class="text-gray-400 text-sm mt-0.5">{{ object.cnpj_cpf|default:"Sem CNPJ/CPF" }}</p>
+        </div>
+        {% if object.ativo %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Ativo</span>
+        {% else %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Inativo</span>{% endif %}
+      </div>
+      <dl class="grid grid-cols-2 gap-4 text-sm">
+        {% if object.email %}<div><dt class="text-gray-400 uppercase text-xs font-medium">E-mail</dt><dd class="text-gray-700 mt-0.5">{{ object.email }}</dd></div>{% endif %}
+        {% if object.telefone %}<div><dt class="text-gray-400 uppercase text-xs font-medium">Telefone</dt><dd class="text-gray-700 mt-0.5">{{ object.telefone }}</dd></div>{% endif %}
+        {% if object.contato_principal %}<div><dt class="text-gray-400 uppercase text-xs font-medium">Contato</dt><dd class="text-gray-700 mt-0.5">{{ object.contato_principal }}</dd></div>{% endif %}
+        {% if object.prazo_entrega_dias %}<div><dt class="text-gray-400 uppercase text-xs font-medium">Prazo Entrega</dt><dd class="text-gray-700 mt-0.5">{{ object.prazo_entrega_dias }} dias</dd></div>{% endif %}
+        {% if object.cidade %}<div><dt class="text-gray-400 uppercase text-xs font-medium">Cidade / UF</dt><dd class="text-gray-700 mt-0.5">{{ object.cidade }}/{{ object.uf }}</dd></div>{% endif %}
+      </dl>
+    </div>
+  </div>
+  <div>
+    <div class="bg-gray-50 rounded-xl p-4 text-xs text-gray-400 space-y-1">
+      <p>Criado em: {{ object.criado_em|date:"d/m/Y H:i" }}</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
