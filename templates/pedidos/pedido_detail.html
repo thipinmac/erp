@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Pedido {{ object.numero }}{% endblock %}
+{% block page_title %}Pedido {{ object.numero }}{% endblock %}
+{% block breadcrumb %}
+<p class="text-xs text-gray-400 uppercase font-medium">Pedidos</p>
+<h1 class="text-lg font-semibold text-gray-800">{{ object.numero }} — {{ object.cliente.nome }}</h1>
+{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'pedidos:list' %}" class="text-sm text-gray-500 hover:text-gray-800 px-3 py-2">← Voltar</a>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Main info -->
+  <div class="lg:col-span-2 space-y-6">
+    <!-- Header card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-900">{{ object.numero }}</h2>
+          <p class="text-gray-500 text-sm mt-0.5">{{ object.cliente.nome }}</p>
+        </div>
+        <span class="px-3 py-1 rounded-full text-sm font-medium
+          {% if object.status == 'concluido' %}bg-green-100 text-green-800
+          {% elif object.status == 'cancelado' %}bg-red-100 text-red-800
+          {% elif object.status == 'em_producao' %}bg-blue-100 text-blue-800
+          {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+          {{ object.get_status_display }}
+        </span>
+      </div>
+      <dl class="grid grid-cols-2 gap-4 text-sm">
+        <div><dt class="text-gray-400 uppercase text-xs font-medium">Valor Total</dt><dd class="font-semibold text-gray-800 mt-0.5">R$ {{ object.valor_total|floatformat:2 }}</dd></div>
+        <div><dt class="text-gray-400 uppercase text-xs font-medium">Risco</dt><dd class="mt-0.5">
+          <span class="px-2 py-0.5 rounded text-xs font-medium {% if object.risco == 'alto' %}bg-red-100 text-red-700{% elif object.risco == 'medio' %}bg-yellow-100 text-yellow-700{% else %}bg-green-100 text-green-700{% endif %}">{{ object.get_risco_display }}</span>
+        </dd></div>
+        <div><dt class="text-gray-400 uppercase text-xs font-medium">Previsão Entrega</dt><dd class="text-gray-700 mt-0.5">{{ object.data_prevista_entrega|date:"d/m/Y"|default:"—" }}</dd></div>
+        <div><dt class="text-gray-400 uppercase text-xs font-medium">Responsável</dt><dd class="text-gray-700 mt-0.5">{{ object.responsavel.get_full_name|default:"—" }}</dd></div>
+        {% if object.contrato %}<div><dt class="text-gray-400 uppercase text-xs font-medium">Contrato</dt><dd class="text-gray-700 mt-0.5">{{ object.contrato }}</dd></div>{% endif %}
+        {% if object.filial %}<div><dt class="text-gray-400 uppercase text-xs font-medium">Filial</dt><dd class="text-gray-700 mt-0.5">{{ object.filial }}</dd></div>{% endif %}
+      </dl>
+      {% if object.observacoes %}<div class="mt-4 pt-4 border-t border-gray-100"><p class="text-sm text-gray-600">{{ object.observacoes }}</p></div>{% endif %}
+    </div>
+
+    <!-- Pendências bloqueantes -->
+    {% if tem_bloqueante %}
+    <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+      <p class="text-red-700 font-medium text-sm">⚠ Este pedido possui pendências bloqueantes</p>
+    </div>
+    {% endif %}
+
+    <!-- Marcos -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-800">Marcos de Acompanhamento</h3></div>
+      {% if marcos %}
+      <table class="min-w-full divide-y divide-gray-100 text-sm">
+        <thead class="bg-gray-50"><tr>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Etapa</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Previsto</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Realizado</th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+        </tr></thead>
+        <tbody class="divide-y divide-gray-50">
+        {% for m in marcos %}
+        <tr>
+          <td class="px-4 py-3 text-gray-800 font-medium">{{ m.etapa }}</td>
+          <td class="px-4 py-3 text-gray-600">{{ m.data_prevista|date:"d/m/Y"|default:"—" }}</td>
+          <td class="px-4 py-3 text-gray-600">{{ m.data_real|date:"d/m/Y"|default:"—" }}</td>
+          <td class="px-4 py-3">{% if m.concluido %}<span class="text-green-600 text-xs font-medium">✓ Concluído</span>{% else %}<span class="text-yellow-600 text-xs">Pendente</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="px-6 py-8 text-center text-gray-400 text-sm">Nenhum marco registrado.</p>
+      {% endif %}
+    </div>
+
+    <!-- Pendências -->
+    {% if pendencias %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-800">Pendências em Aberto</h3></div>
+      <ul class="divide-y divide-gray-100">
+      {% for p in pendencias %}
+      <li class="px-6 py-3 flex items-center gap-3">
+        {% if p.bloqueante %}<span class="w-2 h-2 rounded-full bg-red-500 flex-shrink-0"></span>{% else %}<span class="w-2 h-2 rounded-full bg-yellow-400 flex-shrink-0"></span>{% endif %}
+        <span class="text-sm text-gray-800">{{ p.descricao }}</span>
+        {% if p.bloqueante %}<span class="ml-auto text-xs text-red-600 font-medium">Bloqueante</span>{% endif %}
+      </li>
+      {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Sidebar -->
+  <div class="space-y-6">
+    <!-- Atualizar status -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <h3 class="font-semibold text-gray-800 mb-4">Atualizar Status</h3>
+      <form method="post" action="{% url 'pedidos:atualizar_status' object.pk %}">
+        {% csrf_token %}
+        <select name="status" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-3 focus:ring-2 focus:ring-blue-300 outline-none">
+          {% for val, lbl in status_choices %}
+          <option value="{{ val }}" {% if object.status == val %}selected{% endif %}>{{ lbl }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="w-full bg-brand text-white text-sm font-medium py-2 rounded-lg hover:bg-blue-800 transition-colors">Salvar Status</button>
+      </form>
+    </div>
+    <!-- Comissões -->
+    {% if comissoes %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <h3 class="font-semibold text-gray-800 mb-3">Comissões</h3>
+      <ul class="space-y-2">
+      {% for c in comissoes %}
+      <li class="flex items-center justify-between text-sm">
+        <span class="text-gray-700">{{ c.beneficiario.get_full_name|default:c.beneficiario }}</span>
+        <span class="font-medium text-gray-800">{{ c.percentual }}%</span>
+      </li>
+      {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    <!-- Timestamps -->
+    <div class="bg-gray-50 rounded-xl p-4 text-xs text-gray-400 space-y-1">
+      <p>Criado em: {{ object.criado_em|date:"d/m/Y H:i" }}</p>
+      <p>Alterado em: {{ object.alterado_em|date:"d/m/Y H:i" }}</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% for reserva in reservas %}
+<tr class="hover:bg-gray-50">
+  <td class="px-4 py-3 text-sm text-gray-800">{{ reserva.item.descricao|default:"—" }}</td>
+  <td class="px-4 py-3 text-sm font-medium text-gray-800">{{ reserva.quantidade }}</td>
+  <td class="px-4 py-3 text-sm text-brand">{{ reserva.pedido.numero|default:"—" }}</td>
+  <td class="px-4 py-3 text-sm text-gray-600">{{ reserva.localizacao|default:"—" }}</td>
+  <td class="px-4 py-3">
+    <span class="px-2 py-0.5 rounded-full text-xs font-medium
+      {% if reserva.status == 'atendida' %}bg-green-100 text-green-800
+      {% elif reserva.status == 'cancelada' %}bg-red-100 text-red-800
+      {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+      {{ reserva.get_status_display|default:reserva.status }}
+    </span>
+  </td>
+  <td class="px-4 py-3 text-sm text-gray-400">{{ reserva.criado_em|date:"d/m/Y" }}</td>
+</tr>
+{% empty %}
+<tr><td colspan="6" class="px-4 py-10 text-center text-gray-400 text-sm">Nenhuma reserva encontrada.</td></tr>
+{% endfor %}

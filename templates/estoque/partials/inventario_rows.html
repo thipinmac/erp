@@ -1,0 +1,18 @@
+{% for inv in inventarios %}
+<tr class="hover:bg-gray-50">
+  <td class="px-4 py-3 text-sm font-medium text-brand">{{ inv.numero|default:inv.pk }}</td>
+  <td class="px-4 py-3 text-sm text-gray-700">{{ inv.get_tipo_display|default:inv.tipo }}</td>
+  <td class="px-4 py-3">
+    <span class="px-2 py-0.5 rounded-full text-xs font-medium
+      {% if inv.status == 'encerrado' %}bg-green-100 text-green-800
+      {% elif inv.status == 'em_contagem' %}bg-blue-100 text-blue-800
+      {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+      {{ inv.get_status_display|default:inv.status }}
+    </span>
+  </td>
+  <td class="px-4 py-3 text-sm text-gray-600">{{ inv.criado_em|date:"d/m/Y" }}</td>
+  <td class="px-4 py-3 text-sm text-gray-500">{{ inv.responsavel.get_full_name|default:"—" }}</td>
+</tr>
+{% empty %}
+<tr><td colspan="5" class="px-4 py-10 text-center text-gray-400 text-sm">Nenhum inventário encontrado.</td></tr>
+{% endfor %}

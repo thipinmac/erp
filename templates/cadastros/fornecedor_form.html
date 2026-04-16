@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Editar Fornecedor{% else %}Novo Fornecedor{% endif %}{% endblock %}
+
+{% block page_title %}
+  {% if object %}Editar Fornecedor — {{ object.razao_social }}{% else %}Novo Fornecedor{% endif %}
+{% endblock %}
+
+{% block breadcrumb %}
+  <div class="flex items-center gap-2 text-sm text-gray-500">
+    <a href="{% url 'cadastros:fornecedor_list' %}" class="hover:text-brand transition-colors">Fornecedores</a>
+    <span>/</span>
+    <span class="text-gray-800 font-medium">{% if object %}Editar{% else %}Novo{% endif %}</span>
+  </div>
+{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'cadastros:fornecedor_list' %}"
+     class="inline-flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+    ← Voltar
+  </a>
+{% endblock %}
+
+{% block content %}
+<form method="post" novalidate class="space-y-6">
+  {% csrf_token %}
+
+  <!-- Dados Empresariais -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/60">
+      <h2 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+        <svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+        </svg>
+        Dados Empresariais
+      </h2>
+    </div>
+    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+      <div class="md:col-span-2">
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Razão Social <span class="text-red-500">*</span></label>
+        <input type="text" name="razao_social" value="{{ form.razao_social.value|default:'' }}"
+               placeholder="Razão social completa"
+               class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent {% if form.razao_social.errors %}border-red-400{% endif %}">
+        {% if form.razao_social.errors %}<p class="mt-1 text-xs text-red-600">{{ form.razao_social.errors|join:", " }}</p>{% endif %}
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Nome Fantasia</label>
+        <input type="text" name="nome_fantasia" value="{{ form.nome_fantasia.value|default:'' }}"
+               placeholder="Nome fantasia"
+               class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent">
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">CNPJ <span class="text-red-500">*</span></label>
+        <input type="text" name="cnpj" value="{{ form.cnpj.value|default:'' }}"
+               placeholder="00.000.000/0000-00"
+               class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent {% if form.cnpj.errors %}border-red-400{% endif %}">
+        {% if form.cnpj.errors %}<p class="mt-1 text-xs text-red-600">{{ form.cnpj.errors|join:", " }}</p>{% endif %}
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Inscrição Estadual</label>
+        <input type="text" name="inscricao_estadual" value="{{ form.inscricao_estadual.value|default:'' }}"
+               placeholder="Inscrição estadual"
+               class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent">
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Categoria de Fornecimento</label>
+        <select name="categoria"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent">
+          <option value="">— Selecionar —</option>
+          {% for cat in categorias %}
+          <option value="{{ cat.pk }}" {% if form.categoria.value == cat.pk %}selected{% endif %}>{{ cat.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Prazo de Entrega Padrão (dias)</label>
+        <input type="number" name="prazo_entrega" value="{{ form.prazo_entrega.value|default:'' }}"
+               placeholder="Ex: 7"
+               min="0" max="365"
+               class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent">
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Condição de Pagamento Padrão</label>
+        <select name="cond_pagamento"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent">
+          <option value="">— Selecionar —</option>
+          {% for cond in condicoes_pagamento %}
+          <option value="{{ cond.pk }}" {% if form.cond_pagamento.value == cond.pk %}selected{% endif %}>{{ cond.descricao }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="flex items-center gap-3 pt-5">
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" name="ativo" value="1" class="sr-only peer"
+                 {% if form.ativo.value != False %}checked{% endif %}>
+          <div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-brand rounded-full peer peer-checked:bg-brand transition-colors"></div>
+          <div class="absolute left-0.5 top-0.5 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5 shadow-sm"></div>
+        </label>
+        <span class="text-sm text-gray-700">Fornecedor Ativo</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Endereço -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/60">
+      <h2 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+        <svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        Endereço
+      </h2>
+    </div>
+    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">CEP</label>
+        <input type="text" name="cep" value="{{ form.cep.value|default:'' }}"
+               placeholder="00000-000"
+               class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent">
+      </div>
+      <div class="lg:col-span-2">
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Logradouro</label>
+        <input type="text" name="logradouro" value="{{ form.logradouro.value|default:'' }}"
+               placeholder="Rua, Avenida…"
+               class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Número</label>
+        <input type="text" name="numero" value="{{ form.numero.value|default:'' }}"
+               placeholder="Nº"
+               class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Complemento</label>
+        <input type="text" name="complemento" value="{{ form.complemento.value|default:'' }}"
+               class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Bairro</label>
+        <input type="text" name="bairro" value="{{ form.bairro.value|default:'' }}"
+               class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Cidade</label>
+        <input type="text" name="cidade" value="{{ form.cidade.value|default:'' }}"
+               class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">UF</label>
+        <select name="uf"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent">
+          <option value="">UF</option>
+          <option value="AC" {% if form.uf.value == 'AC' %}selected{% endif %}>AC</option>
+          <option value="AL" {% if form.uf.value == 'AL' %}selected{% endif %}>AL</option>
+          <option value="AM" {% if form.uf.value == 'AM' %}selected{% endif %}>AM</option>
+          <option value="AP" {% if form.uf.value == 'AP' %}selected{% endif %}>AP</option>
+          <option value="BA" {% if form.uf.value == 'BA' %}selected{% endif %}>BA</option>
+          <option value="CE" {% if form.uf.value == 'CE' %}selected{% endif %}>CE</option>
+          <option value="DF" {% if form.uf.value == 'DF' %}selected{% endif %}>DF</option>
+          <option value="ES" {% if form.uf.value == 'ES' %}selected{% endif %}>ES</option>
+          <option value="GO" {% if form.uf.value == 'GO' %}selected{% endif %}>GO</option>
+          <option value="MA" {% if form.uf.value == 'MA' %}selected{% endif %}>MA</option>
+          <option value="MG" {% if form.uf.value == 'MG' %}selected{% endif %}>MG</option>
+          <option value="MS" {% if form.uf.value == 'MS' %}selected{% endif %}>MS</option>
+          <option value="MT" {% if form.uf.value == 'MT' %}selected{% endif %}>MT</option>
+          <option value="PA" {% if form.uf.value == 'PA' %}selected{% endif %}>PA</option>
+          <option value="PB" {% if form.uf.value == 'PB' %}selected{% endif %}>PB</option>
+          <option value="PE" {% if form.uf.value == 'PE' %}selected{% endif %}>PE</option>
+          <option value="PI" {% if form.uf.value == 'PI' %}selected{% endif %}>PI</option>
+          <option value="PR" {% if form.uf.value == 'PR' %}selected{% endif %}>PR</option>
+          <option value="RJ" {% if form.uf.value == 'RJ' %}selected{% endif %}>RJ</option>
+          <option value="RN" {% if form.uf.value == 'RN' %}selected{% endif %}>RN</option>
+          <option value="RO" {% if form.uf.value == 'RO' %}selected{% endif %}>RO</option>
+          <option value="RR" {% if form.uf.value == 'RR' %}selected{% endif %}>RR</option>
+          <option value="RS" {% if form.uf.value == 'RS' %}selected{% endif %}>RS</option>
+          <option value="SC" {% if form.uf.value == 'SC' %}selected{% endif %}>SC</option>
+          <option value="SE" {% if form.uf.value == 'SE' %}selected{% endif %}>SE</option>
+          <option value="SP" {% if form.uf.value == 'SP' %}selected{% endif %}>SP</option>
+          <option value="TO" {% if form.uf.value == 'TO' %}selected{% endif %}>TO</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contato -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/60">
+      <h2 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+        <svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg>
+        Contato
+      </h2>
+    </div>
+    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Telefone</label>
+        <input type="tel" name="telefone" value="{{ form.telefone.value|default:'' }}"
+               placeholder="(00) 0000-0000"
+               class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">E-mail</label>
+        <input type="email" name="email" value="{{ form.email.value|default:'' }}"
+               placeholder="compras@fornecedor.com"
+               class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Nome do Contato</label>
+        <input type="text" name="contato_nome" value="{{ form.contato_nome.value|default:'' }}"
+               placeholder="Nome do contato principal"
+               class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent">
+      </div>
+      <div class="md:col-span-2 lg:col-span-3">
+        <label class="block text-xs font-medium text-gray-600 mb-1.5">Observações</label>
+        <textarea name="observacoes" rows="3"
+                  placeholder="Condições especiais, observações…"
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent resize-none">{{ form.observacoes.value|default:'' }}</textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ações -->
+  <div class="flex items-center justify-end gap-3">
+    <a href="{% url 'cadastros:fornecedor_list' %}"
+       class="px-5 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+      Cancelar
+    </a>
+    <button type="submit"
+            class="px-5 py-2.5 bg-brand text-white rounded-lg text-sm font-medium hover:bg-brand-light transition-colors shadow-sm">
+      {% if object %}Salvar Alterações{% else %}Cadastrar Fornecedor{% endif %}
+    </button>
+  </div>
+
+</form>
+{% endblock %}

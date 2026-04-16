@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Ordens de Produção{% endblock %}
+{% block page_title %}Ordens de Produção{% endblock %}
+{% block breadcrumb %}
+<p class="text-xs text-gray-400 uppercase font-medium">Produção</p>
+<h1 class="text-lg font-semibold text-gray-800">Ordens de Produção</h1>
+{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'producao:op_create' %}" class="inline-flex items-center gap-2 bg-brand-accent hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg">+ Nova OP</a>
+{% endblock %}
+{% block content %}
+<form method="get" class="mb-4 flex gap-2">
+  <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Buscar por número..." class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-300 outline-none">
+  <select name="status" class="border border-gray-200 rounded-lg px-3 py-2 text-sm">
+    <option value="">Todos os status</option>
+    {% for val, lbl in status_choices %}<option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+  </select>
+  <button class="bg-brand text-white text-sm px-4 py-2 rounded-lg">Filtrar</button>
+</form>
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <table class="min-w-full divide-y divide-gray-100">
+    <thead class="bg-gray-50"><tr>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pedido</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Responsável</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prev. Início</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prior.</th>
+    </tr></thead>
+    <tbody class="divide-y divide-gray-50">
+    {% for op in ordens %}
+    <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{% url 'producao:op_detail' op.pk %}'">
+      <td class="px-4 py-3 text-sm font-medium text-brand">{{ op.numero }}</td>
+      <td class="px-4 py-3 text-sm text-gray-700">{{ op.pedido.numero|default:"—" }}</td>
+      <td class="px-4 py-3 text-sm text-gray-800">{{ op.item.descricao|default:"—"|truncatechars:35 }}</td>
+      <td class="px-4 py-3 text-sm text-gray-600">{{ op.responsavel.get_full_name|default:"—" }}</td>
+      <td class="px-4 py-3 text-sm text-gray-600">{{ op.data_prevista_inicio|date:"d/m/Y"|default:"—" }}</td>
+      <td class="px-4 py-3">
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium
+          {% if op.status == 'concluida' %}bg-green-100 text-green-800
+          {% elif op.status == 'cancelada' %}bg-red-100 text-red-800
+          {% elif op.status == 'em_montagem' or op.status == 'em_acabamento' %}bg-blue-100 text-blue-800
+          {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+          {{ op.get_status_display }}
+        </span>
+      </td>
+      <td class="px-4 py-3 text-sm text-gray-600">{{ op.prioridade }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="7" class="px-4 py-10 text-center text-gray-400 text-sm">Nenhuma ordem de produção encontrada.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if is_paginated %}
+<div class="flex justify-center gap-2 mt-4 text-sm">
+  {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">← Anterior</a>{% endif %}
+  <span class="px-3 py-1.5 text-gray-500">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">Próxima →</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Contratos{% endblock %}
+{% block page_title %}Contratos{% endblock %}
+{% block breadcrumb %}<p class="text-xs text-gray-400 uppercase font-medium">Contratos</p><h1 class="text-lg font-semibold text-gray-800">Contratos</h1>{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'contratos:create' %}" class="inline-flex items-center gap-2 bg-brand-accent hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg">+ Novo Contrato</a>
+{% endblock %}
+{% block content %}
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <table class="min-w-full divide-y divide-gray-100">
+    <thead class="bg-gray-50"><tr>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor Total</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Assinatura</th>
+      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Responsável</th>
+    </tr></thead>
+    <tbody class="divide-y divide-gray-50">
+    {% for contrato in contratos %}
+    <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{% url 'contratos:detail' contrato.pk %}'">
+      <td class="px-4 py-3 text-sm font-medium text-brand">{{ contrato.numero }}</td>
+      <td class="px-4 py-3 text-sm text-gray-800">{{ contrato.cliente.nome }}</td>
+      <td class="px-4 py-3 text-sm text-gray-700">R$ {{ contrato.valor_total|floatformat:0 }}</td>
+      <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-medium {% if contrato.status == 'vigente' %}bg-green-100 text-green-800{% elif contrato.status == 'encerrado' %}bg-gray-100 text-gray-600{% else %}bg-yellow-100 text-yellow-800{% endif %}">{{ contrato.get_status_display }}</span></td>
+      <td class="px-4 py-3 text-sm text-gray-600">{{ contrato.data_assinatura|date:"d/m/Y"|default:"—" }}</td>
+      <td class="px-4 py-3 text-sm text-gray-600">{{ contrato.responsavel.get_full_name|default:"—" }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6" class="px-4 py-10 text-center text-gray-400 text-sm">Nenhum contrato encontrado.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

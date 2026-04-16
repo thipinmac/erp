@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Editar Orçamento Rápido{% else %}Novo Orçamento Rápido{% endif %}{% endblock %}
+
+{% block page_title %}{% if object %}Editar Orçamento Rápido #{{ object.numero }}{% else %}Novo Orçamento Rápido{% endif %}{% endblock %}
+
+{% block breadcrumb %}
+<div class="flex items-center gap-2 text-sm">
+  <a href="{% url 'orcamentos:list' %}" class="text-gray-400 hover:text-gray-600">Orçamentos</a>
+  <span class="text-gray-300">/</span>
+  <span class="text-gray-700 font-medium">{% if object %}Editar #{{ object.numero }}{% else %}Novo Rápido{% endif %}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-5"
+     x-data="orcRapidoCalc()"
+     x-init="init()">
+
+  <form method="post" id="orcamento-rapido-form">
+    {% csrf_token %}
+
+    <!-- Identificação -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+      <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide border-b border-gray-100 pb-3">
+        Identificação
+      </h2>
+
+      <!-- Cliente -->
+      <div>
+        <label for="id_cliente" class="block text-sm font-medium text-gray-700 mb-1">
+          Cliente <span class="text-red-500">*</span>
+        </label>
+        <input type="text" name="cliente" id="id_cliente"
+               value="{{ form.cliente.value|default:'' }}"
+               placeholder="Nome ou razão social do cliente"
+               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors">
+        {% if form.cliente.errors %}<p class="mt-1 text-xs text-red-600">{{ form.cliente.errors|join:", " }}</p>{% endif %}
+      </div>
+
+      <!-- Descrição -->
+      <div>
+        <label for="id_descricao" class="block text-sm font-medium text-gray-700 mb-1">
+          Descrição do Projeto <span class="text-red-500">*</span>
+        </label>
+        <textarea name="descricao" id="id_descricao" rows="3"
+                  placeholder="Descreva resumidamente o projeto ou produto…"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors resize-none">{{ form.descricao.value|default:'' }}</textarea>
+        {% if form.descricao.errors %}<p class="mt-1 text-xs text-red-600">{{ form.descricao.errors|join:", " }}</p>{% endif %}
+      </div>
+    </div>
+
+    <!-- Valores e Preço -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+      <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide border-b border-gray-100 pb-3">
+        Valores e Formação de Preço
+      </h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        <!-- Valor de Custo -->
+        <div>
+          <label for="id_valor_custo" class="block text-sm font-medium text-gray-700 mb-1">
+            Custo Total (R$) <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">R$</span>
+            <input type="number" name="valor_custo" id="id_valor_custo" step="0.01" min="0"
+                   value="{{ form.valor_custo.value|default:'0.00' }}"
+                   x-model.number="custo"
+                   @input="calc()"
+                   class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors">
+          </div>
+          {% if form.valor_custo.errors %}<p class="mt-1 text-xs text-red-600">{{ form.valor_custo.errors|join:", " }}</p>{% endif %}
+        </div>
+
+        <!-- Markup -->
+        <div>
+          <label for="id_markup_pct" class="block text-sm font-medium text-gray-700 mb-1">
+            Markup (%) <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <input type="number" name="markup_pct" id="id_markup_pct" step="0.01" min="0"
+                   value="{{ form.markup_pct.value|default:'30.00' }}"
+                   x-model.number="markup"
+                   @input="calc()"
+                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">%</span>
+          </div>
+          {% if form.markup_pct.errors %}<p class="mt-1 text-xs text-red-600">{{ form.markup_pct.errors|join:", " }}</p>{% endif %}
+        </div>
+
+        <!-- Desconto -->
+        <div>
+          <label for="id_desconto_pct" class="block text-sm font-medium text-gray-700 mb-1">
+            Desconto (%)
+          </label>
+          <div class="relative">
+            <input type="number" name="desconto_pct" id="id_desconto_pct" step="0.01" min="0" max="100"
+                   value="{{ form.desconto_pct.value|default:'0.00' }}"
+                   x-model.number="desconto"
+                   @input="calc()"
+                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">%</span>
+          </div>
+          {% if form.desconto_pct.errors %}<p class="mt-1 text-xs text-red-600">{{ form.desconto_pct.errors|join:", " }}</p>{% endif %}
+        </div>
+
+        <!-- Prazo de Entrega -->
+        <div>
+          <label for="id_prazo_entrega_dias" class="block text-sm font-medium text-gray-700 mb-1">
+            Prazo de Entrega (dias)
+          </label>
+          <div class="relative">
+            <input type="number" name="prazo_entrega_dias" id="id_prazo_entrega_dias" step="1" min="1"
+                   value="{{ form.prazo_entrega_dias.value|default:'30' }}"
+                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">dias</span>
+          </div>
+          {% if form.prazo_entrega_dias.errors %}<p class="mt-1 text-xs text-red-600">{{ form.prazo_entrega_dias.errors|join:", " }}</p>{% endif %}
+        </div>
+      </div>
+
+      <!-- Preview de Preço Final -->
+      <div class="mt-2 rounded-lg bg-gray-50 border border-gray-200 p-4 grid grid-cols-3 gap-4 text-center">
+        <div>
+          <p class="text-xs text-gray-400 mb-0.5">Preço sem desconto</p>
+          <p class="text-sm font-semibold text-gray-700" x-text="'R$ ' + semDesconto.toFixed(2).replace('.', ',')">R$ 0,00</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400 mb-0.5">Desconto</p>
+          <p class="text-sm font-semibold text-red-500" x-text="'- R$ ' + valorDesconto.toFixed(2).replace('.', ',')">- R$ 0,00</p>
+        </div>
+        <div class="bg-brand/5 rounded-lg p-2 border border-brand/20">
+          <p class="text-xs text-brand font-medium mb-0.5">Preço Final</p>
+          <p class="text-lg font-bold text-brand" x-text="'R$ ' + precoFinal.toFixed(2).replace('.', ',')">R$ 0,00</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Observações -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+      <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide border-b border-gray-100 pb-3">
+        Observações
+      </h2>
+      <div>
+        <textarea name="observacoes" id="id_observacoes" rows="4"
+                  placeholder="Condições comerciais, garantias, materiais incluídos…"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors resize-none">{{ form.observacoes.value|default:'' }}</textarea>
+      </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="flex items-center justify-between">
+      <a href="{% url 'orcamentos:list' %}"
+         class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+        Cancelar
+      </a>
+      <div class="flex gap-3">
+        <button type="submit" name="action" value="rascunho"
+                class="px-4 py-2 text-sm text-gray-700 border border-gray-300 bg-white rounded-lg hover:bg-gray-50 transition-colors">
+          Salvar Rascunho
+        </button>
+        <button type="submit" name="action" value="enviar"
+                class="px-5 py-2 text-sm font-medium text-white bg-brand rounded-lg hover:bg-brand-light transition-colors shadow-sm">
+          Salvar e Enviar
+        </button>
+      </div>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function orcRapidoCalc() {
+  return {
+    custo: {{ form.valor_custo.value|default:'0' }},
+    markup: {{ form.markup_pct.value|default:'30' }},
+    desconto: {{ form.desconto_pct.value|default:'0' }},
+    semDesconto: 0,
+    valorDesconto: 0,
+    precoFinal: 0,
+    init() { this.calc(); },
+    calc() {
+      this.semDesconto = parseFloat(this.custo) * (1 + parseFloat(this.markup) / 100);
+      this.valorDesconto = this.semDesconto * (parseFloat(this.desconto) / 100);
+      this.precoFinal = this.semDesconto - this.valorDesconto;
+    }
+  }
+}
+</script>
+{% endblock %}

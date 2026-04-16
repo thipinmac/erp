@@ -1,0 +1,12 @@
+{% for op in oportunidades %}
+<tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{% url 'crm:oportunidade_detail' op.pk %}'">
+  <td class="px-4 py-3 text-sm font-medium text-gray-800">{{ op.titulo }}</td>
+  <td class="px-4 py-3 text-sm text-gray-700">{{ op.cliente.nome|default:op.lead.nome|default:"—" }}</td>
+  <td class="px-4 py-3 text-sm text-gray-700">{{ op.etapa.nome|default:"—" }}</td>
+  <td class="px-4 py-3 text-sm text-gray-800">R$ {{ op.valor|floatformat:2 }}</td>
+  <td class="px-4 py-3 text-sm text-gray-600">{{ op.probabilidade }}%</td>
+  <td class="px-4 py-3 text-sm text-gray-500">{{ op.responsavel.get_full_name|default:"—" }}</td>
+</tr>
+{% empty %}
+<tr><td colspan="6" class="px-4 py-10 text-center text-gray-400 text-sm">Nenhuma oportunidade encontrada.</td></tr>
+{% endfor %}

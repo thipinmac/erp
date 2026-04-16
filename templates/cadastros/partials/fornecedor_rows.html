@@ -1,0 +1,12 @@
+{% for fornecedor in fornecedores %}
+<tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{% url 'cadastros:fornecedor_detail' fornecedor.pk %}'">
+  <td class="px-4 py-3 text-sm font-medium text-gray-800">{{ fornecedor.nome }}</td>
+  <td class="px-4 py-3 text-sm text-gray-600">{{ fornecedor.cnpj_cpf|default:"—" }}</td>
+  <td class="px-4 py-3 text-sm text-gray-600">{{ fornecedor.contato_principal|default:"—" }}</td>
+  <td class="px-4 py-3 text-sm text-gray-600">{{ fornecedor.email|default:"—" }}</td>
+  <td class="px-4 py-3 text-sm text-gray-500">{{ fornecedor.prazo_entrega_dias|default:"—" }}</td>
+  <td class="px-4 py-3">{% if fornecedor.ativo %}<span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>{% else %}<span class="w-2 h-2 rounded-full bg-gray-300 inline-block"></span>{% endif %}</td>
+</tr>
+{% empty %}
+<tr><td colspan="6" class="px-4 py-10 text-center text-gray-400 text-sm">Nenhum fornecedor encontrado.</td></tr>
+{% endfor %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}PCP — Produção{% endblock %}
+{% block page_title %}Kanban de Produção (PCP){% endblock %}
+{% block breadcrumb %}<p class="text-xs text-gray-400 uppercase font-medium">Produção</p><h1 class="text-lg font-semibold text-gray-800">Kanban de Produção</h1>{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'producao:op_list' %}" class="inline-flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg mr-2">Lista OPs</a>
+<a href="{% url 'producao:op_create' %}" class="inline-flex items-center gap-2 bg-brand-accent hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg">+ Nova OP</a>
+{% endblock %}
+{% block content %}
+<div class="flex gap-4 overflow-x-auto pb-4 -mx-2 px-2">
+  {% for col in colunas %}
+  <div class="flex-shrink-0" style="min-width:240px;max-width:240px;">
+    <div class="rounded-t-xl px-3 py-2 mb-2 flex items-center justify-between bg-blue-900/10 border-t-2 border-blue-700">
+      <span class="font-semibold text-gray-800 text-sm">{{ col.etapa }}</span>
+      <span class="text-xs bg-white text-gray-600 font-medium px-2 py-0.5 rounded-full">{{ col.ops|length }}</span>
+    </div>
+    <div class="space-y-2 min-h-[80px]">
+      {% for op in col.ops %}
+      <a href="{% url 'producao:op_detail' op.pk %}" class="block bg-white rounded-xl shadow-sm border border-gray-100 p-3 hover:shadow-md hover:border-blue-200 transition-all">
+        <div class="flex items-center justify-between mb-1">
+          <span class="font-semibold text-brand text-sm">OP-{{ op.numero }}</span>
+          <span class="text-xs text-gray-400">Qtd: {{ op.quantidade }}</span>
+        </div>
+        <p class="text-xs text-gray-700 truncate">{{ op.pedido.numero|default:"" }} — {{ op.descricao|truncatechars:40 }}</p>
+        {% if op.data_prevista %}
+        <p class="text-xs text-gray-400 mt-1">Prazo: {{ op.data_prevista|date:"d/m" }}</p>
+        {% endif %}
+        {% if op.atrasada %}
+        <span class="text-xs text-red-500 font-medium">⚠ Atrasada</span>
+        {% endif %}
+      </a>
+      {% empty %}
+      <div class="text-center py-6 text-gray-300 text-xs">Nenhuma OP</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

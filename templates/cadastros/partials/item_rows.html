@@ -1,0 +1,13 @@
+{% for item in items %}
+<tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{% url 'cadastros:item_detail' item.pk %}'">
+  <td class="px-4 py-3 text-sm font-mono text-gray-700">{{ item.codigo }}</td>
+  <td class="px-4 py-3 text-sm text-gray-800 font-medium">{{ item.descricao }}</td>
+  <td class="px-4 py-3 text-sm text-gray-600">{{ item.familia.nome|default:"—" }}</td>
+  <td class="px-4 py-3 text-sm text-gray-600">{{ item.get_tipo_display }}</td>
+  <td class="px-4 py-3 text-sm text-gray-600">{{ item.unidade.sigla|default:"—" }}</td>
+  <td class="px-4 py-3 text-sm text-gray-700">R$ {{ item.custo_medio|floatformat:4 }}</td>
+  <td class="px-4 py-3">{% if item.ativo %}<span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>{% else %}<span class="w-2 h-2 rounded-full bg-gray-300 inline-block"></span>{% endif %}</td>
+</tr>
+{% empty %}
+<tr><td colspan="7" class="px-4 py-10 text-center text-gray-400 text-sm">Nenhum item encontrado.</td></tr>
+{% endfor %}

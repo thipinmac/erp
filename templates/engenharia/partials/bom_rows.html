@@ -1,0 +1,19 @@
+{% for bom in boms %}
+<tr class="hover:bg-gray-50">
+  <td class="px-4 py-3 text-sm font-mono text-brand">{{ bom.codigo }}</td>
+  <td class="px-4 py-3 text-sm text-gray-800">{{ bom.projeto.nome|default:"—" }}</td>
+  <td class="px-4 py-3 text-sm text-gray-600">{{ bom.versao|default:"—" }}</td>
+  <td class="px-4 py-3">
+    <span class="px-2 py-0.5 rounded-full text-xs font-medium
+      {% if bom.status == 'aprovado' %}bg-green-100 text-green-800
+      {% elif bom.status == 'obsoleto' %}bg-red-100 text-red-800
+      {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+      {{ bom.get_status_display|default:bom.status }}
+    </span>
+  </td>
+  <td class="px-4 py-3 text-sm text-gray-600">{{ bom.itens.count }} itens</td>
+  <td class="px-4 py-3 text-sm text-gray-400">{{ bom.criado_em|date:"d/m/Y" }}</td>
+</tr>
+{% empty %}
+<tr><td colspan="6" class="px-4 py-10 text-center text-gray-400 text-sm">Nenhuma BOM encontrada.</td></tr>
+{% endfor %}

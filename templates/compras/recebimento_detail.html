@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Recebimento{% endblock %}
+{% block page_title %}Recebimento{% endblock %}
+{% block breadcrumb %}
+<p class="text-xs text-gray-400 uppercase font-medium">Compras</p>
+<h1 class="text-lg font-semibold text-gray-800">Recebimento — {{ object.pedido_compra.numero }}</h1>
+{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'compras:pedido_detail' object.pedido_compra.pk %}" class="text-sm text-gray-500 hover:text-gray-800 px-3 py-2">← Voltar ao PC</a>
+{% endblock %}
+{% block content %}
+<div class="space-y-6">
+  <!-- Cabeçalho -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    {% if tem_divergencia %}
+    <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">⚠ Este recebimento possui divergências de quantidade.</div>
+    {% endif %}
+    <dl class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+      <div><dt class="text-gray-400 uppercase text-xs font-medium">PC</dt><dd class="font-semibold text-brand mt-0.5">{{ object.pedido_compra.numero }}</dd></div>
+      <div><dt class="text-gray-400 uppercase text-xs font-medium">Fornecedor</dt><dd class="text-gray-700 mt-0.5">{{ object.pedido_compra.fornecedor.nome|default:"—" }}</dd></div>
+      <div><dt class="text-gray-400 uppercase text-xs font-medium">Data</dt><dd class="text-gray-700 mt-0.5">{{ object.data|date:"d/m/Y" }}</dd></div>
+      <div><dt class="text-gray-400 uppercase text-xs font-medium">Status</dt><dd class="mt-0.5">{{ object.get_status_display }}</dd></div>
+      <div><dt class="text-gray-400 uppercase text-xs font-medium">Responsável</dt><dd class="text-gray-700 mt-0.5">{{ object.responsavel.get_full_name|default:"—" }}</dd></div>
+      {% if object.chave_nfe %}<div><dt class="text-gray-400 uppercase text-xs font-medium">Chave NF-e</dt><dd class="text-gray-700 mt-0.5 font-mono text-xs truncate">{{ object.chave_nfe }}</dd></div>{% endif %}
+    </dl>
+    {% if object.observacoes %}<div class="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-600">{{ object.observacoes }}</div>{% endif %}
+  </div>
+
+  <!-- Itens recebidos -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-800">Itens Recebidos</h3></div>
+    <table class="min-w-full divide-y divide-gray-100 text-sm">
+      <thead class="bg-gray-50"><tr>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Qtd. Pedida</th>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Qtd. Recebida</th>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Divergência</th>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Custo Unit.</th>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aceito</th>
+      </tr></thead>
+      <tbody class="divide-y divide-gray-50">
+      {% for item in itens %}
+      <tr class="{% if item.quantidade_divergencia > 0 %}bg-yellow-50{% endif %}">
+        <td class="px-4 py-3 text-gray-800">{{ item.item.descricao|default:"—" }}</td>
+        <td class="px-4 py-3 text-gray-700">{{ item.quantidade_pedida }}</td>
+        <td class="px-4 py-3 text-gray-700">{{ item.quantidade_recebida }}</td>
+        <td class="px-4 py-3 {% if item.quantidade_divergencia > 0 %}text-yellow-700 font-medium{% else %}text-gray-400{% endif %}">{{ item.quantidade_divergencia }}</td>
+        <td class="px-4 py-3 text-gray-700">R$ {{ item.custo_unitario|floatformat:4 }}</td>
+        <td class="px-4 py-3">{% if item.aceito %}<span class="text-green-600 text-xs">✓ Sim</span>{% else %}<span class="text-red-600 text-xs">✗ Não</span>{% endif %}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="px-4 py-6 text-center text-gray-400 text-sm">Sem itens.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
