@@ -1,6 +1,6 @@
 """Views do módulo Compras e Suprimentos."""
 from django.contrib.auth.decorators import login_required
-from django.core.signals import Signal
+from django.dispatch import Signal
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -71,7 +71,7 @@ class PedidoCompraListView(TenantMixin, HTMXMixin, ListView):
         if status:
             qs = qs.filter(status=status)
         if q:
-            qs = qs.filter(numero__icontains=q) | qs.filter(fornecedor__nome__icontains=q)
+            qs = qs.filter(numero__icontains=q) | qs.filter(fornecedor__razao_social__icontains=q) | qs.filter(fornecedor__nome_fantasia__icontains=q)
         return qs
 
     def get_context_data(self, **kwargs):

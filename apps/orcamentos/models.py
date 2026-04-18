@@ -14,7 +14,7 @@ from django.db import models
 from apps.core.models import AbstractBaseModel
 
 
-class TemplatePropossta(AbstractBaseModel):
+class TemplateProposta(AbstractBaseModel):
     """Templates personalizáveis de proposta com branding."""
     nome = models.CharField(max_length=100)
     cabecalho_html = models.TextField(blank=True)
@@ -102,7 +102,7 @@ class OrcamentoTecnico(AbstractBaseModel):
     )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.RASCUNHO)
     responsavel = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-    template = models.ForeignKey(TemplatePropossta, on_delete=models.SET_NULL, null=True, blank=True)
+    template = models.ForeignKey(TemplateProposta, on_delete=models.SET_NULL, null=True, blank=True)
 
     # Datas
     data_validade = models.DateField(null=True, blank=True)

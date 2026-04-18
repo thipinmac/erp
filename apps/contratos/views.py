@@ -2,7 +2,7 @@
 import hashlib
 
 from django.contrib.auth.decorators import login_required
-from django.core.signals import Signal
+from django.dispatch import Signal
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -12,7 +12,7 @@ from django.views.generic import CreateView, DetailView, ListView
 
 from apps.core.mixins import HTMXMixin, TenantMixin
 
-from .models import Clausula, Contrato, CronogramaFinanceiro, ModeloContrato, PortalToken
+from .models import Contrato, ModeloContrato, PortalToken
 
 # Sinal emitido após assinatura do contrato
 contrato_assinado = Signal()

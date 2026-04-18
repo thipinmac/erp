@@ -202,7 +202,7 @@ class TarefaComercial(AbstractBaseModel):
         return self.titulo
 
 
-class Meta(AbstractBaseModel):
+class MetaComercial(AbstractBaseModel):
     """Metas comerciais por vendedor/equipe/período."""
 
     class Periodo(models.TextChoices):

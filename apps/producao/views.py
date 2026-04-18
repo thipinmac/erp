@@ -21,7 +21,7 @@ class KanbanProducaoView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         return (
-            OrdemProducao.objects.filter(empresa=self.request.user.perfil.empresa)
+            OrdemProducao.objects.filter(empresa=self.request.empresa)
             .select_related("pedido", "item", "roteiro", "responsavel")
             .order_by("prioridade", "data_prevista_inicio")
         )
@@ -49,7 +49,7 @@ class OrdemProducaoListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         qs = (
-            OrdemProducao.objects.filter(empresa=self.request.user.perfil.empresa)
+            OrdemProducao.objects.filter(empresa=self.request.empresa)
             .select_related("pedido", "item", "responsavel")
             .order_by("-criado_em")
         )
@@ -76,7 +76,7 @@ class OrdemProducaoDetailView(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         return OrdemProducao.objects.filter(
-            empresa=self.request.user.perfil.empresa
+            empresa=self.request.empresa
         ).prefetch_related("apontamentos", "pecas_faltantes", "volumes", "lotes")
 
 
@@ -100,7 +100,7 @@ class OrdemProducaoCreateView(LoginRequiredMixin, CreateView):
     ]
 
     def form_valid(self, form):
-        form.instance.empresa = self.request.user.perfil.empresa
+        form.instance.empresa = self.request.empresa
         form.instance.criado_por = self.request.user
         return super().form_valid(form)
 
@@ -114,7 +114,7 @@ class OrdemProducaoCreateView(LoginRequiredMixin, CreateView):
 def apontar_etapa(request, pk):
     """HTMX POST — registra apontamento de produção em uma etapa da OP."""
     op = get_object_or_404(
-        OrdemProducao, pk=pk, empresa=request.user.perfil.empresa
+        OrdemProducao, pk=pk, empresa=request.empresa
     )
 
     if request.method == "POST":
@@ -150,7 +150,7 @@ def apontar_etapa(request, pk):
 def avancar_status_op(request, pk):
     """HTMX POST — avança o status de uma OP para a próxima etapa."""
     op = get_object_or_404(
-        OrdemProducao, pk=pk, empresa=request.user.perfil.empresa
+        OrdemProducao, pk=pk, empresa=request.empresa
     )
 
     STATUS_FLOW = [
@@ -195,7 +195,7 @@ class RomaneioListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         return Romaneio.objects.filter(
-            empresa=self.request.user.perfil.empresa
+            empresa=self.request.empresa
         ).select_related("pedido", "conferente")
 
 
@@ -208,5 +208,5 @@ class RomaneioDetailView(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         return Romaneio.objects.filter(
-            empresa=self.request.user.perfil.empresa
+            empresa=self.request.empresa
         ).prefetch_related("volumes__pecas")

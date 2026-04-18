@@ -16,7 +16,7 @@ class AgendaListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         qs = AgendaAtendimento.objects.filter(
-            empresa=self.request.user.perfil.empresa
+            empresa=self.request.empresa
         ).select_related("pedido", "romaneio", "equipe", "responsavel")
 
         data = self.request.GET.get("data")
@@ -59,7 +59,7 @@ class AgendaCreateView(LoginRequiredMixin, CreateView):
     ]
 
     def form_valid(self, form):
-        form.instance.empresa = self.request.user.perfil.empresa
+        form.instance.empresa = self.request.empresa
         form.instance.criado_por = self.request.user
         return super().form_valid(form)
 
@@ -78,7 +78,7 @@ class AgendaDetailView(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         return AgendaAtendimento.objects.filter(
-            empresa=self.request.user.perfil.empresa
+            empresa=self.request.empresa
         ).prefetch_related("checklist", "ocorrencias")
 
 
@@ -86,7 +86,7 @@ class AgendaDetailView(LoginRequiredMixin, DetailView):
 def aceitar_entrega(request, pk):
     """HTMX POST — registra aceite do cliente ao final do atendimento."""
     agenda = get_object_or_404(
-        AgendaAtendimento, pk=pk, empresa=request.user.perfil.empresa
+        AgendaAtendimento, pk=pk, empresa=request.empresa
     )
 
     if request.method == "POST":

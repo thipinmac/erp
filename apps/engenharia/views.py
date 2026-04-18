@@ -1,6 +1,6 @@
 """Views do módulo Engenharia e Projetos."""
 from django.contrib.auth.decorators import login_required
-from django.core.signals import Signal
+from django.dispatch import Signal
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -9,7 +9,7 @@ from django.views.generic import CreateView, DetailView, ListView
 
 from apps.core.mixins import HTMXMixin, TenantMixin
 
-from .models import BOM, AmbienteProjeto, DivergenciaProjeto, PecaComponente, PlanoCorte, ProjetoTecnico
+from .models import BOM, ProjetoTecnico
 
 # Sinal emitido quando projeto é liberado para PCP
 projeto_liberado_para_pcp = Signal()

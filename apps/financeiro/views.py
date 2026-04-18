@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.generic import CreateView, ListView, TemplateView
 
-from .models import Baixa, TituloFinanceiro
+from .models import Baixa, ContaFinanceira, TituloFinanceiro
 
 
 class ReceberListView(LoginRequiredMixin, ListView):
@@ -19,7 +19,7 @@ class ReceberListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         qs = (
             TituloFinanceiro.objects.filter(
-                empresa=self.request.user.perfil.empresa,
+                empresa=self.request.empresa,
                 tipo="receber",
             )
             .select_related("conta", "pedido", "contrato", "centro_custo")
@@ -53,7 +53,7 @@ class PagarListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         qs = (
             TituloFinanceiro.objects.filter(
-                empresa=self.request.user.perfil.empresa,
+                empresa=self.request.empresa,
                 tipo="pagar",
             )
             .select_related("conta", "pedido", "contrato", "centro_custo")
@@ -83,7 +83,7 @@ class DREView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        empresa = self.request.user.perfil.empresa
+        empresa = self.request.empresa
 
         mes = self.request.GET.get("mes", timezone.localdate().strftime("%Y-%m"))
 
@@ -160,7 +160,7 @@ class TituloCreateView(LoginRequiredMixin, CreateView):
     ]
 
     def form_valid(self, form):
-        form.instance.empresa = self.request.user.perfil.empresa
+        form.instance.empresa = self.request.empresa
         form.instance.criado_por = self.request.user
         return super().form_valid(form)
 
@@ -177,12 +177,10 @@ class TituloCreateView(LoginRequiredMixin, CreateView):
 def baixar_titulo(request, pk):
     """HTMX POST — registra uma baixa (pagamento) de um título financeiro."""
     titulo = get_object_or_404(
-        TituloFinanceiro, pk=pk, empresa=request.user.perfil.empresa
+        TituloFinanceiro, pk=pk, empresa=request.empresa
     )
 
     if request.method == "POST":
-        from .models import ContaFinanceira
-
         valor = request.POST.get("valor", 0)
         forma = request.POST.get("forma_pagamento", "")
         conta_id = request.POST.get("conta")

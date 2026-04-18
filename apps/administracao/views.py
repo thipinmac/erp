@@ -33,7 +33,6 @@ def logout_view(request):
 @login_required
 def selecionar_empresa(request, empresa_id):
     """Troca a empresa ativa do usuário na sessão."""
-    from .models import Empresa
     try:
         empresa = Empresa.objects.get(id=empresa_id, ativo=True)
         if request.user.empresa == empresa or request.user.is_superuser:

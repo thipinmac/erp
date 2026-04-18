@@ -1,6 +1,6 @@
 """Admin do CRM."""
 from django.contrib import admin
-from .models import EtapaPipeline, HistoricoOportunidade, Lead, Meta, Oportunidade, TarefaComercial, Visita
+from .models import EtapaPipeline, HistoricoOportunidade, Lead, MetaComercial, Oportunidade, TarefaComercial, Visita
 
 
 @admin.register(EtapaPipeline)
@@ -37,5 +37,5 @@ class TarefaComercialAdmin(admin.ModelAdmin):
     list_filter = ["tipo", "prioridade", "concluida", "responsavel"]
 
 
-admin.site.register(Meta)
+admin.site.register(MetaComercial)
 admin.site.register(HistoricoOportunidade)

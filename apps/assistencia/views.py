@@ -17,7 +17,7 @@ class ChamadoListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         qs = (
-            Chamado.objects.filter(empresa=self.request.user.perfil.empresa)
+            Chamado.objects.filter(empresa=self.request.empresa)
             .select_related("cliente", "responsavel", "contrato")
             .order_by("-data_abertura")
         )
@@ -37,6 +37,8 @@ class ChamadoListView(LoginRequiredMixin, ListView):
         q = self.request.GET.get("q")
         if q:
             qs = qs.filter(numero__icontains=q) | qs.filter(
+                cliente__nome__icontains=q
+            ) | qs.filter(
                 cliente__razao_social__icontains=q
             )
 
@@ -59,7 +61,7 @@ class ChamadoDetailView(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         return Chamado.objects.filter(
-            empresa=self.request.user.perfil.empresa
+            empresa=self.request.empresa
         ).prefetch_related("visitas", "pecas")
 
 
@@ -86,7 +88,7 @@ class ChamadoCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         from datetime import timedelta
 
-        form.instance.empresa = self.request.user.perfil.empresa
+        form.instance.empresa = self.request.empresa
         form.instance.criado_por = self.request.user
         instance = form.save(commit=False)
         instance.data_limite_sla = timezone.now() + timedelta(
@@ -106,7 +108,7 @@ class ChamadoCreateView(LoginRequiredMixin, CreateView):
 def encerrar_chamado(request, pk):
     """HTMX POST — encerra o chamado e registra dados de conclusão."""
     chamado = get_object_or_404(
-        Chamado, pk=pk, empresa=request.user.perfil.empresa
+        Chamado, pk=pk, empresa=request.empresa
     )
 
     if request.method == "POST":

@@ -5,10 +5,8 @@ from django.utils import timezone
 
 def _get_token_obj(token_str):
     """Retorna o PortalToken ativo correspondente ao token string."""
-    from contratos.models import PortalToken  # noqa: F401 — import lazy para evitar circular
-
     try:
-        from contratos.models import PortalToken
+        from apps.contratos.models import PortalToken
 
         return PortalToken.objects.select_related("contrato").get(
             token=token_str, ativo=True
@@ -62,7 +60,7 @@ def _portal_required(view_func):
 
 def _get_contrato(request):
     """Retorna o contrato associado à sessão do portal."""
-    from contratos.models import Contrato
+    from apps.contratos.models import Contrato
 
     contrato_id = request.session.get("portal_contrato_id")
     if not contrato_id:

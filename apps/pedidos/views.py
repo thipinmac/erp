@@ -100,7 +100,7 @@ class PedidoDetailView(TenantMixin, DetailView):
         ctx = super().get_context_data(**kwargs)
         ctx["marcos"] = self.object.marcos.order_by("data_prevista")
         ctx["pendencias"] = self.object.pendencias.filter(resolvida=False).order_by("-bloqueante")
-        ctx["comissoes"] = self.object.comissoes.select_related("beneficiario")
+        ctx["comissoes"] = self.object.comissoes_pedido.select_related("beneficiario")
         ctx["status_choices"] = Pedido.Status.choices
         ctx["tem_bloqueante"] = self.object.pendencias.filter(
             resolvida=False, bloqueante=True

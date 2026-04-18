@@ -136,6 +136,11 @@ CELERY_RESULT_BACKEND=redis://localhost:6379/1
 EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
 DEFAULT_FROM_EMAIL=erp@localserver
 
+# Servidor local HTTP-only (sem SSL)
+SECURE_SSL_REDIRECT=False
+SESSION_COOKIE_SECURE=False
+CSRF_COOKIE_SECURE=False
+
 # Sentry (deixe vazio para desativar)
 SENTRY_DSN=
 
@@ -159,12 +164,9 @@ export DJANGO_SETTINGS_MODULE=config.settings.production
 # ── 8. Django: migrate + collectstatic ───────────────────────────────────────
 echo ""
 echo "[8/10] Rodando migrate e collectstatic..."
-cd "$APP_DIR"
-
 sudo -u "$APP_USER" bash -c "
-    set -a
-    source $ENV_FILE
-    set +a
+    cd $APP_DIR
+    set -a; source $ENV_FILE; set +a
     $APP_DIR/venv/bin/python manage.py migrate --noinput
     $APP_DIR/venv/bin/python manage.py collectstatic --noinput --clear
 "
@@ -178,12 +180,12 @@ echo "[9/10] Instalando serviços systemd..."
 cat > /etc/systemd/system/gunicorn_erp.service <<EOF
 [Unit]
 Description=MóveisERP — Gunicorn
-After=network.target
+After=network.target postgresql.service redis.service
 
 [Service]
 Type=notify
 User=$APP_USER
-Group=$APP_USER
+Group=www-data
 WorkingDirectory=$APP_DIR
 EnvironmentFile=$ENV_FILE
 Environment=DJANGO_SETTINGS_MODULE=config.settings.production
@@ -197,7 +199,9 @@ ExecStart=$APP_DIR/venv/bin/gunicorn config.wsgi:application \\
 ExecReload=/bin/kill -s HUP \$MAINPID
 RuntimeDirectory=gunicorn_erp
 RuntimeDirectoryMode=0755
+UMask=0007
 Restart=on-failure
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
@@ -210,7 +214,7 @@ Description=MóveisERP — Celery Worker
 After=network.target redis.service
 
 [Service]
-Type=forking
+Type=simple
 User=$APP_USER
 Group=$APP_USER
 WorkingDirectory=$APP_DIR
@@ -218,10 +222,9 @@ EnvironmentFile=$ENV_FILE
 Environment=DJANGO_SETTINGS_MODULE=config.settings.production
 ExecStart=$APP_DIR/venv/bin/celery -A config worker \\
     --loglevel=warning \\
-    --logfile=$APP_DIR/logs/celery_worker.log \\
-    --pidfile=/run/celery_erp_worker.pid
-PIDFile=/run/celery_erp_worker.pid
+    --logfile=$APP_DIR/logs/celery_worker.log
 Restart=on-failure
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
@@ -242,9 +245,9 @@ EnvironmentFile=$ENV_FILE
 Environment=DJANGO_SETTINGS_MODULE=config.settings.production
 ExecStart=$APP_DIR/venv/bin/celery -A config beat \\
     --loglevel=warning \\
-    --logfile=$APP_DIR/logs/celery_beat.log \\
-    --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    --logfile=$APP_DIR/logs/celery_beat.log
 Restart=on-failure
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target

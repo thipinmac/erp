@@ -138,7 +138,7 @@ journalctl -u celery_erp -n 50
 | Serviço           | Porta/Socket              | Descrição                  |
 |-------------------|---------------------------|----------------------------|
 | Nginx             | :80                       | Proxy reverso              |
-| Gunicorn          | unix:/run/gunicorn_erp.sock | App Django               |
+| Gunicorn          | unix:/run/gunicorn_erp/gunicorn.sock | App Django        |
 | PostgreSQL        | :5432 (local)             | Banco de dados             |
 | Redis             | :6379 (local)             | Cache / Broker Celery      |
 | Celery Worker     | —                         | Tarefas assíncronas        |

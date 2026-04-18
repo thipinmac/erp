@@ -171,10 +171,6 @@ def aprovar_orcamento(request, pk):
         orcamento.alterado_por = request.user
         orcamento.save()
 
-        # Dispara sinal para criar pedido preliminar
-        from django.db.models.signals import post_save
-        # (Será implementado via signals.py)
-
         messages.success(request, "Orçamento aprovado! Pedido preliminar criado.")
         return redirect("orcamentos:tecnico_detail", pk=orcamento.pk)
 

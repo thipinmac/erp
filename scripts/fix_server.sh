@@ -90,13 +90,13 @@ ExecStart=$VENV/gunicorn config.wsgi:application \\
     --workers 3 \\
     --worker-class sync \\
     --bind unix:/run/gunicorn_erp/gunicorn.sock \\
-    --umask 007 \\
     --timeout 120 \\
     --access-logfile $APP_DIR/logs/gunicorn_access.log \\
     --error-logfile $APP_DIR/logs/gunicorn_error.log
 ExecReload=/bin/kill -s HUP \$MAINPID
 RuntimeDirectory=gunicorn_erp
-RuntimeDirectoryMode=0770
+RuntimeDirectoryMode=0755
+UMask=0007
 Restart=on-failure
 RestartSec=5
 
@@ -140,8 +140,7 @@ EnvironmentFile=$ENV_FILE
 Environment=DJANGO_SETTINGS_MODULE=config.settings.production
 ExecStart=$VENV/celery -A config beat \\
     --loglevel=warning \\
-    --logfile=$APP_DIR/logs/celery_beat.log \\
-    --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    --logfile=$APP_DIR/logs/celery_beat.log
 Restart=on-failure
 RestartSec=5
 

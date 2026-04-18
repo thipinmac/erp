@@ -13,16 +13,15 @@ echo "=============================="
 echo " MóveisERP — Atualizando..."
 echo "=============================="
 
-cd "$APP_DIR"
-
 # 1. Instala/atualiza dependências Python
 echo "[1/5] Atualizando dependências..."
-sudo -u "$APP_USER" "$APP_DIR/venv/bin/pip" install -r requirements/production.txt -q --upgrade
+sudo -u "$APP_USER" "$APP_DIR/venv/bin/pip" install -r "$APP_DIR/requirements/production.txt" -q --upgrade --no-cache-dir
 echo "  ✓ Dependências OK"
 
 # 2. Roda migrações
 echo "[2/5] Migrando banco..."
 sudo -u "$APP_USER" bash -c "
+    cd $APP_DIR
     set -a; source $ENV_FILE; set +a
     DJANGO_SETTINGS_MODULE=config.settings.production \
     $APP_DIR/venv/bin/python manage.py migrate --noinput
@@ -32,6 +31,7 @@ echo "  ✓ Banco migrado"
 # 3. Coleta static files
 echo "[3/5] Coletando static..."
 sudo -u "$APP_USER" bash -c "
+    cd $APP_DIR
     set -a; source $ENV_FILE; set +a
     DJANGO_SETTINGS_MODULE=config.settings.production \
     $APP_DIR/venv/bin/python manage.py collectstatic --noinput --clear
