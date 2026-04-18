@@ -1,0 +1,62 @@
+{% extends "portal_cliente/base_portal.html" %}
+
+{% block title %}Documentos{% endblock %}
+{% block nav_documentos %}border-brand text-brand{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <h1 class="text-xl font-bold text-gray-900">Documentos</h1>
+    <p class="text-sm text-gray-500 mt-1">Arquivos disponíveis para download</p>
+  </div>
+
+  {% if documentos %}
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <ul class="divide-y divide-gray-100">
+      {% for doc in documentos %}
+      <li class="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="font-medium text-gray-800 text-sm">{{ doc.nome|default:doc }}</p>
+            {% if doc.criado_em %}
+            <p class="text-xs text-gray-400">{{ doc.criado_em|date:"d/m/Y" }}</p>
+            {% endif %}
+          </div>
+        </div>
+        {% if doc.arquivo %}
+        <a href="{{ doc.arquivo.url }}" target="_blank" rel="noopener"
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand text-white text-xs rounded-lg hover:bg-brand-light transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Baixar
+        </a>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  {% else %}
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-10 text-center">
+    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+      <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+      </svg>
+    </div>
+    <p class="text-gray-500 text-sm">Nenhum documento disponível ainda.</p>
+    <p class="text-gray-400 text-xs mt-1">Os documentos serão disponibilizados conforme o andamento do projeto.</p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

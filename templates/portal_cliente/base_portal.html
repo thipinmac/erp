@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-gray-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Portal do Cliente{% endblock %} — MóveisERP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { DEFAULT:'#1e3a5f', light:'#2d5a8e', accent:'#f97316' }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/htmx.org@2.0.3" defer></script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full flex flex-col min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-brand shadow-md">
+    <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-brand-accent rounded-lg flex items-center justify-center">
+          <span class="text-white font-bold text-sm">M</span>
+        </div>
+        <span class="text-white font-bold text-lg">MóveisERP</span>
+        <span class="text-blue-300 text-sm hidden sm:inline">— Portal do Cliente</span>
+      </div>
+      {% block header_actions %}{% endblock %}
+    </div>
+  </header>
+
+  <!-- Nav tabs (portal) -->
+  {% if request.session.portal_contrato_id %}
+  <nav class="bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-4xl mx-auto px-4 flex gap-1 overflow-x-auto">
+      <a href="{% url 'portal_cliente:view' %}"
+         class="px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap
+                {% block nav_inicio %}border-transparent text-gray-600 hover:text-brand hover:border-brand{% endblock %}">
+        Meu Projeto
+      </a>
+      <a href="{% url 'portal_cliente:timeline' %}"
+         class="px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap
+                {% block nav_timeline %}border-transparent text-gray-600 hover:text-brand hover:border-brand{% endblock %}">
+        Timeline
+      </a>
+      <a href="{% url 'portal_cliente:documentos' %}"
+         class="px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap
+                {% block nav_documentos %}border-transparent text-gray-600 hover:text-brand hover:border-brand{% endblock %}">
+        Documentos
+      </a>
+      <a href="{% url 'portal_cliente:mensagens' %}"
+         class="px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap
+                {% block nav_mensagens %}border-transparent text-gray-600 hover:text-brand hover:border-brand{% endblock %}">
+        Mensagens
+      </a>
+    </div>
+  </nav>
+  {% endif %}
+
+  <!-- Content -->
+  <main class="flex-1 max-w-4xl mx-auto w-full px-4 py-8">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-gray-200 py-4 text-center text-xs text-gray-400">
+    MóveisERP &copy; {% now "Y" %} — Portal seguro para clientes
+  </footer>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
